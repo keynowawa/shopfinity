@@ -1455,9 +1455,9 @@
 
       
       // Update DB if merchant has an id
-      if (session.merchant_id && newName) {
+      if (session.id && newName) {
         const url = window.SUPABASE_CONFIG.url; const key = window.SUPABASE_CONFIG.anonKey;
-        await fetch(`${url}/rest/v1/merchants?id=eq.${session.merchant_id}`, {
+        await fetch(`${url}/rest/v1/merchants?id=eq.${session.id}`, {
           method: 'PATCH',
           headers: {
             'apikey': key,
