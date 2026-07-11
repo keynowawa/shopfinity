@@ -1050,7 +1050,7 @@ async function placeOrder() {
     }
   }
 
-  const submitBtn = document.getElementById('checkoutSubmitBtn') || document.querySelector('.btn-primary[onclick="placeOrder()"]');
+  const submitBtn = document.getElementById('checkoutSubmitBtn') || document.querySelector('button[onclick="placeOrder()"]');
   const originalText = submitBtn ? submitBtn.innerHTML : null;
   if (submitBtn) {
     submitBtn.disabled = true;
@@ -1226,6 +1226,9 @@ function showOrderSuccess(orderId, orderNumber, total) {
 
 function closeOrderSuccess() {
   document.getElementById('orderSuccessModal').classList.remove('open');
+  if (window.location.pathname.endsWith('checkout.html')) {
+    window.location.href = 'index.html';
+  }
 }
 
 async function loadUserOrders() {
@@ -1286,7 +1289,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Close modal on backdrop click
   document.querySelectorAll('.modal-overlay').forEach(overlay => {
     overlay.addEventListener('click', e => {
-      if (e.target === overlay) overlay.classList.remove('open');
+      if (e.target === overlay) {
+        overlay.classList.remove('open');
+        if (overlay.id === 'orderSuccessModal' && window.location.pathname.endsWith('checkout.html')) {
+          window.location.href = 'index.html';
+        }
+      }
     });
   });
 
