@@ -1050,31 +1050,43 @@ async function placeOrder() {
     }
   }
 
-  const subtotal = buyNowItem
+  const submitBtn = document.getElementById('checkoutSubmitBtn') || document.querySelector('.btn-primary[onclick="placeOrder()"]');
+  const originalText = submitBtn ? submitBtn.innerHTML : null;
+  if (submitBtn) {
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="margin-right:8px; animation:spin 1s linear infinite;"><path d="M21 12a9 9 0 1 1-6.219-8.56"/></svg> Processing...';
+  }
+
+  let savedOrder = null;
+  let total = 0;
+  let orderNumber = '';
+
+  try {
+    const subtotal = buyNowItem
     ? (() => { const p = PRODUCTS.find(p => p.id === buyNowItem.productId); return p ? p.price * buyNowItem.qty : 0; })()
     : Object.entries(itemsToOrder).reduce((sum, [productId, qty]) => {
         const p = PRODUCTS.find(p => p.id === productId);
         return sum + (p ? p.price * qty : 0);
       }, 0);
   const shippingFee = subtotal >= 2000 ? 0 : 99;
-  const total       = subtotal + shippingFee;
-  const orderNumber = 'SF-' + Date.now().toString(36).toUpperCase();
+    total       = subtotal + shippingFee;
+    orderNumber = 'SF-' + Date.now().toString(36).toUpperCase();
 
-  // 1. Create the order row
-  const orderResult = await db('/orders', 'POST', {
-    order_number:     orderNumber,
-    user_id:          currentUser.id,
-    subtotal,
-    shipping_fee:     shippingFee,
-    total,
-    payment_method:   paymentMethod,
-    payment_status:   'pending',
-    order_status:     'pending',
-    shipping_address: shippingAddress,
-  });
+    // 1. Create the order row
+    const orderResult = await db('/orders', 'POST', {
+      order_number:     orderNumber,
+      user_id:          currentUser.id,
+      subtotal,
+      shipping_fee:     shippingFee,
+      total,
+      payment_method:   paymentMethod,
+      payment_status:   'pending',
+      order_status:     'pending',
+      shipping_address: shippingAddress,
+    });
 
-  if (!orderResult) { showToast('Failed to place order. Please try again.'); return; }
-  const savedOrder = Array.isArray(orderResult) ? orderResult[0] : orderResult;
+    if (!orderResult) { showToast('Failed to place order. Please try again.'); return; }
+    savedOrder = Array.isArray(orderResult) ? orderResult[0] : orderResult;
 
   // 2. Insert order_items
   const orderItems = Object.entries(itemsToOrder).map(([productId, qty]) => {
@@ -1182,10 +1194,16 @@ async function placeOrder() {
     updateCartUI();
   }
 
-  // 5. Clear buy-now state
-  buyNowItem = null;
-  sessionStorage.removeItem('sf_buyNowItem');
-  sessionStorage.removeItem('sf_checkoutSelected');
+    // 5. Clear buy-now state
+    buyNowItem = null;
+    sessionStorage.removeItem('sf_buyNowItem');
+    sessionStorage.removeItem('sf_checkoutSelected');
+  } finally {
+    if (submitBtn) {
+      submitBtn.disabled = false;
+      if (originalText) submitBtn.innerHTML = originalText;
+    }
+  }
 
   // Close old modal if present (non-checkout.html pages), then show success
   if (document.getElementById('checkoutModal')) closeCheckoutModal();

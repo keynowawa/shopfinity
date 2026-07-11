@@ -1804,3 +1804,7 @@ footer {
     padding: 1.25rem;
   }
 }
+
+@keyframes spin {
+  100% { transform: rotate(360deg); }
+}

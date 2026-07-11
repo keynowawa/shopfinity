@@ -480,12 +480,14 @@ button { font-family: inherit; }
   grid-template-columns: 1.6fr 1fr;
   gap: 14px;
   align-items: start;
+  min-width: 0;
 }
 
 .card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+  min-width: 0;
   padding: 1.25rem;
 }
 
@@ -1057,8 +1059,9 @@ table.data-table {
     align-items: center;
     box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
   }
-  .sidebar-brand {
-    display: none; /* Hide logo to save space */
+  .sidebar-brand,
+  .sidebar-footer {
+    display: none; /* Hide logo and footer on mobile */
   }
   .sidebar-nav {
     display: flex;
@@ -1122,7 +1125,7 @@ table.data-table {
     gap: 10px;
   }
   .dash-grid {
-    grid-template-columns: 1fr;
+    grid-template-columns: minmax(0, 1fr);
   }
   .settings-grid {
     grid-template-columns: 1fr;
