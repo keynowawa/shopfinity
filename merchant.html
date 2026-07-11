@@ -794,6 +794,9 @@
     if (!tbody) return;
     const q = (document.getElementById('products-search')?.value || '').toLowerCase();
     let list = allProducts.filter(p => {
+      // Hide soft-deleted products
+      if (p.status === 'Deleted') return false;
+      
       // DB stores status as title-case: 'Active', 'Draft'
       if (productFilter === 'active' && p.status !== 'Active') return false;
       if (productFilter === 'draft'  && p.status !== 'Draft')  return false;
@@ -1093,8 +1096,21 @@
       okColor: '#c62828',
     });
     if (!ok) return;
-    await mdb(`/products?id=eq.${id}`, 'DELETE');
+    
+    // Try hard delete first
+    const res = await mdb(`/products?id=eq.${id}`, 'DELETE');
+    
+    // If it fails (likely foreign key constraint from existing orders/reviews), fallback to soft-delete
+    if (res && res._error) {
+      const softRes = await mdb(`/products?id=eq.${id}`, 'PATCH', { status: 'Deleted' });
+      if (softRes && softRes._error) {
+        showSettingsToast('❌ Failed to delete product. Please try again.');
+        return;
+      }
+    }
+    
     await loadProducts();
+    showSettingsToast('✓ Product deleted successfully.');
   }
 
   /* ============================================================
