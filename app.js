@@ -1529,6 +1529,9 @@ function renderCheckoutPageItems() {
 
   if (items.length === 0) {
     container.innerHTML = '<p style="color:var(--muted);font-size:14px;text-align:center;padding:1rem 0;">No items to checkout.</p>';
+    if (window.location.pathname.endsWith('checkout.html')) {
+      window.location.replace('index.html');
+    }
     return;
   }
 
