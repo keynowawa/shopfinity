@@ -828,25 +828,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('pd-bread-cat').href = `products.html?cat=${encodeURIComponent(product.cat)}`;
   document.getElementById('pd-bread-name').textContent = product.name;
 
-  // Gallery � real images if available, emoji fallback
+  // Gallery ... real images if available, emoji fallback
   const imgs = (product.image_urls || []).filter(Boolean);
   galleryImages = imgs;   // assign to module-level var so lightbox/thumbs can access it
 
   if (imgs.length > 0) {
-    // Main image � show first image
+    // Main image ... show first image
     const mainEl = document.getElementById('pd-main-img');
     mainEl.innerHTML = `<img src="${imgs[0]}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" />`;
     mainEl.style.fontSize = '0';
     mainEl.dataset.idx = '0';
 
-    // Thumbnails � clicking sets main image AND updates lightbox index
+    // Thumbnails ... clicking sets main image AND updates lightbox index
     document.getElementById('pd-thumbs').innerHTML = imgs.map((url, i) =>
       `<div class="pd-thumb ${i===0?'active':''}" onclick="selectThumbImg(this,${i})" style="overflow:hidden;">
          <img src="${url}" alt="Photo ${i+1}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" />
        </div>`
     ).join('');
   } else {
-    // Emoji fallback � disable lightbox click
+    // Emoji fallback ... disable lightbox click
     const mainEl = document.getElementById('pd-main-img');
     mainEl.innerHTML = `<img src="https://placehold.co/400x400/e0e0e0/888888.png?text=No+Image" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" />`; mainEl.onclick = null;
     mainEl.style.cursor = 'default';
@@ -963,7 +963,7 @@ function bbAddToCart() {
 function bbBuyNow() {
   if (!pdProduct) return;
   const qty = parseInt(document.getElementById('bb-qty').value) || 1;
-  // Buy Now checks stock and opens checkout for this product only � cart is untouched
+  // Buy Now checks stock and opens checkout for this product only ... cart is untouched
   if (qty > pdProduct.stock) {
     showToast(`Only ${pdProduct.stock} in stock`);
     return;

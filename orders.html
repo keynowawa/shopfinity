@@ -178,7 +178,7 @@
     <div id="loginForm">
       <h2>Sign in</h2><p>Welcome back to Shopfinity</p>
       <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com" /></div>
-      <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="��������" /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="........................" /></div>
       <button class="btn btn-primary" onclick="doLogin()">Sign in</button>
       <div class="modal-footer">No account? <a onclick="showRegister()">Create one</a></div>
     </div>
@@ -376,7 +376,7 @@
     </div>
     <div class="form-group" style="margin-top:0.75rem;">
       <label>Your review</label>
-      <textarea id="reviewModalText" rows="4" style="width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;resize:vertical;" placeholder="Share your experience with this product�"></textarea>
+      <textarea id="reviewModalText" rows="4" style="width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;resize:vertical;" placeholder="Share your experience with this product..."></textarea>
     </div>
     <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1rem;">
       <input type="checkbox" id="reviewModalUseVera" />
@@ -407,7 +407,7 @@
 <script src="app.js"></script>
 <script>
 /* =====================================================
-   ORDERS PAGE � tab state & rendering
+   ORDERS PAGE ... tab state & rendering
    ===================================================== */
 
 const PIPELINE = [
@@ -457,7 +457,7 @@ async function renderOrders() {
     return;
   }
 
-  container.innerHTML = `<div class="empty-orders"><div class="big-emoji"><svg class="inline-icon" viewBox="0 0 24 24" ><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></g></svg></div><p>Loading your orders�</p></div>`;
+  container.innerHTML = `<div class="empty-orders"><div class="big-emoji"><svg class="inline-icon" viewBox="0 0 24 24" ><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></g></svg></div><p>Loading your orders...</p></div>`;
 
   try {
     // Fetch orders and all reviews by this user (both normal and VERA) in parallel
@@ -524,7 +524,7 @@ function updateTabCounts(orders, reviewed) {
 function renderTabContent() {
   const container = document.getElementById('ordersContainer');
 
-  // Reviewed tab � show a summary of all reviews the user has left
+  // Reviewed tab ... show a summary of all reviews the user has left
   if (activeTab === 'reviewed') {
     if (userReviews.length === 0) {
       container.innerHTML = `<div class="empty-orders">
@@ -649,7 +649,7 @@ function buildOrderCard(order) {
         const productLink = `product.html?id=${encodeURIComponent(pid)}`;
         const alreadyReviewed = isReviewed(pid, order.id);
 
-        // Review / confirm button logic � only on received orders
+        // Review / confirm button logic ... only on received orders
         let actionBtn = '';
         if (status === 'received') {
           if (alreadyReviewed) {
@@ -740,7 +740,7 @@ async function handleConfirmReceipt(orderId) {
   if (!confirmed) return;
 
   const btn = document.getElementById(`confirm-${orderId}`);
-  if (btn) { btn.disabled = true; btn.textContent = 'Confirming�'; }
+  if (btn) { btn.disabled = true; btn.textContent = 'Confirming...'; }
 
   let ok = false;
   try {
@@ -754,7 +754,7 @@ async function handleConfirmReceipt(orderId) {
     return;
   }
 
-  // Reload � wrapped in try/catch so a failed reload doesn't leave the page broken
+  // Reload ... wrapped in try/catch so a failed reload doesn't leave the page broken
   try {
     allOrders = await loadUserOrders();
     if (currentUser) {
@@ -780,7 +780,7 @@ function openReviewModal(productId, itemRowId, productName, orderId) {
   reviewStarRating      = 5;
   document.getElementById('reviewModalProductName').textContent = `Reviewing: ${productName}`;
   document.getElementById('reviewModalText').value = '';
-  // Always start unchecked � user must explicitly opt in to VERA
+  // Always start unchecked ... user must explicitly opt in to VERA
   const veraCb = document.getElementById('reviewModalUseVera');
   if (veraCb) veraCb.checked = false;
   setReviewStar(5);
@@ -814,14 +814,14 @@ async function submitModalReview() {
   }
 
   const postBtn = document.querySelector('#reviewModal .btn-primary');
-  postBtn.textContent = 'Posting�'; postBtn.disabled = true;
+  postBtn.textContent = 'Posting...'; postBtn.disabled = true;
 
   const ok = await submitReview(reviewTargetProductId, reviewStarRating, text, true, useVera, reviewTargetOrderId);
 
   postBtn.textContent = 'Post review'; postBtn.disabled = false;
 
   if (ok) {
-    // Mark this product as reviewed locally � use product-only key for pre-migration compat
+    // Mark this product as reviewed locally ... use product-only key for pre-migration compat
     reviewedSet.add(`${reviewTargetProductId}:${reviewTargetOrderId || ''}`);
     if (!reviewTargetOrderId) {
       reviewedSet.add(`${reviewTargetProductId}:`); // Only trigger legacy fallback if there really is no order_id

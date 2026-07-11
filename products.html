@@ -206,7 +206,7 @@
       </div>
       <div class="form-group">
         <label>Password</label>
-        <input type="password" id="loginPass" placeholder="��������" />
+        <input type="password" id="loginPass" placeholder="........................" />
       </div>
       <button class="btn btn-primary" onclick="doLogin()">Sign in</button>
       <div class="modal-footer">No account? <a onclick="showRegister()">Create one</a></div>
@@ -386,8 +386,8 @@
     <h2>About Shopfinity</h2>
     <p>Shopfinity is a fully functional prototype food e-commerce platform designed for testing and demonstrating review verification browser extensions.</p>
     <p>All products, prices, orders, and user accounts are simulated. No real transactions are processed.</p>
-    <p>Built with plain HTML, CSS, and JavaScript � no frameworks, no backend.</p>
-    <p style="margin-top:12px; font-size:12px; color:#bbb;">Version 1.0 � For testing and demo use only</p>
+    <p>Built with plain HTML, CSS, and JavaScript ... no frameworks, no backend.</p>
+    <p style="margin-top:12px; font-size:12px; color:#bbb;">Version 1.0 ... For testing and demo use only</p>
     <button class="btn btn-primary" style="margin-top:1rem" onclick="closeAboutModal()">Got it</button>
   </div>
 </div>
@@ -633,7 +633,7 @@
   // Search on this page (live)
   document.getElementById('searchInput').addEventListener('input', applyFilters);
 
-  /* ---- Initial render � wait for all DB products ---- */
+  /* ---- Initial render ... wait for all DB products ---- */
   document.addEventListener('DOMContentLoaded', async () => {
     await loadAllProducts();   // fetches every Active product from the products table
     rebuildCategoryFilters();

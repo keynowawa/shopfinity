@@ -279,8 +279,8 @@ function addToCart(productId, qty = 1) {
 
   cart[productId] = current + allowed;
   cartSelected.add(productId);   // auto-select newly added items
-  if (allowed < qty) showToast(`Only ${stock} in stock — added ${allowed} ✓`);
-  else showToast('Added to cart ✓');
+  if (allowed < qty) showToast(`Only ${stock} in stock — added ${allowed}`);
+  else showToast('Added to cart');
 
   updateCartUI();
   syncCartItemToDB(productId, cart[productId]);
@@ -494,7 +494,7 @@ async function doLogin() {
     updateAccountUI();
     document.getElementById('loginEmail').value = '';
     document.getElementById('loginPass').value  = '';
-    showToast('Signed in as ' + currentUser.name + ' ✓');
+    showToast('Signed in as ' + currentUser.name + '');
     await loadCartFromDB();
   } else {
     showToast('Login failed: ' + result.error);
@@ -517,7 +517,7 @@ async function doRegister() {
     document.getElementById('regName').value  = '';
     document.getElementById('regEmail').value = '';
     document.getElementById('regPass').value  = '';
-    showToast('✅ Account created! Welcome, ' + name);
+    showToast('Account created! Welcome, ' + name);
   } else {
     showToast('Registration failed: ' + result.error);
   }
@@ -582,7 +582,7 @@ function sendContact() {
   const msg  = document.getElementById('cMsg').value.trim();
   if (!name || !msg) { showToast('Please fill in all fields'); return; }
   closeContactModal();
-  showToast("Message sent! We'll get back to you soon ✓");
+  showToast("Message sent! We'll get back to you soon");
   document.getElementById('cName').value  = '';
   document.getElementById('cMsg').value   = '';
   document.getElementById('cEmail').value = '';
@@ -682,7 +682,7 @@ async function submitReview(productId, rating, text, verifiedPurchase = false, u
     };
     try {
       const result = await _insertReview(review);
-      if (result) { showToast('Review posted! ✓'); loadProductReviews(productId); return true; }
+      if (result) { showToast('Review posted!'); loadProductReviews(productId); return true; }
     } catch(err) {
       console.error("[VERA] Normal Review Failed:", err);
       if (err._supabase) console.error("[VERA] Supabase Details:", err._supabase);
@@ -694,7 +694,7 @@ async function submitReview(productId, rating, text, verifiedPurchase = false, u
             'PATCH',
             { rating, text, verified_purchase: verifiedPurchase }
           );
-          showToast('Review updated! ✓');
+          showToast('Review updated!');
           loadProductReviews(productId);
           return true;
         } catch(updateErr) {
@@ -720,8 +720,12 @@ async function submitReview(productId, rating, text, verifiedPurchase = false, u
     
     // 2. Ask VERA extension for ZK-proof
     return new Promise((resolve) => {
+      let extTimeout;
+      
       const listener = async (event) => {
         if (event.source !== window || !event.data || event.data.type !== "PROOF_GENERATED") return;
+        
+        clearTimeout(extTimeout);
         window.removeEventListener("message", listener);
         
         if (event.data.error) {
@@ -761,13 +765,13 @@ async function submitReview(productId, rating, text, verifiedPurchase = false, u
            } catch(dbErr) {
              // 409 duplicate = already reviewed; treat as success
              if (dbErr?.status !== 409 && dbErr?._supabase?.code !== '23505') {
-               showToast('❌ Failed to save review');
+               showToast('Failed to save review');
                resolve(false);
                return;
              }
            }
 
-           showToast('✅ Review securely verified and posted!');
+           showToast('Review securely verified and posted!');
            loadProductReviews(productId);
            resolve(true);
         } else {
@@ -780,7 +784,7 @@ async function submitReview(productId, rating, text, verifiedPurchase = false, u
       window.postMessage({ source: "VERA_WIDGET", type: "GENERATE_PROOF", storeID: p.store_name, itemSKU: p.sku, nonce: nonce }, "*");
       
       // Timeout after 10s
-      setTimeout(() => {
+      extTimeout = setTimeout(() => {
         window.removeEventListener("message", listener);
         showToast('VERA extension did not respond in time.');
         resolve(false);
@@ -843,7 +847,7 @@ async function confirmReceipt(orderId) {
     );
     clearTimeout(timeout);
     if (res.ok) {
-      showToast('✓ Order marked as received');
+      showToast('Order marked as received');
       return true;
     }
     const err = await res.json().catch(() => ({}));
@@ -929,10 +933,10 @@ async function verifyUserIdentity({ idType, idNumber }) {
   }
 
   if (result) {
-    showToast('Identity verified ✓');
+    showToast('Identity verified');
     // Update the "Verify ID" button in the account modal if present
     const verifBtn = document.getElementById('verif-status');
-    if (verifBtn) verifBtn.textContent = '✅ ID Verified';
+    if (verifBtn) verifBtn.textContent = 'ID Verified';
     return true;
   }
   showToast('Verification failed. Please try again.');
@@ -1114,7 +1118,7 @@ async function placeOrder() {
             }, 5000);
             function veraStoreListener(event) {
               if (event.data?.source === "VERA_EXTENSION" && event.data?.type === "CREDENTIAL_STORED") {
-                console.log("[VERA] ✅ Extension confirmed: Credential stored successfully!");
+                console.log("[VERA] Extension confirmed: Credential stored successfully!");
                 clearTimeout(timeout);
                 window.removeEventListener("message", veraStoreListener);
                 resolve(true);
@@ -1423,7 +1427,7 @@ async function saveNewAddress() {
 
   if (!result) { showToast('Failed to save address'); return; }
 
-  showToast('Address saved ✓');
+  showToast('Address saved');
   toggleNewAddressForm();
   await loadSavedAddresses();
   renderAddressesModalList();
@@ -1445,7 +1449,7 @@ async function setDefaultAddress(addrId) {
   await loadSavedAddresses();
   renderAddressesModalList();
   if (document.getElementById('coAddressList')) renderCheckoutPageAddresses();
-  showToast('Default address updated ✓');
+  showToast('Default address updated');
 }
 
 /** Delete a saved address. */
