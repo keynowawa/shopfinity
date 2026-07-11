@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shopfinity – My Orders</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    .orders-page { max-width: 860px; margin: 0 auto; padding: 2rem 1rem 5rem; }
+    .orders-title { font-size: 22px; font-weight: 700; margin-bottom: 0.25rem; }
+    .orders-sub   { font-size: 14px; color: var(--muted); margin-bottom: 1.5rem; }
+
+    /* Tabs */
+    .order-tabs { display: flex; gap: 4px; border-bottom: 2px solid var(--border); margin-bottom: 1.75rem; }
+    .order-tab {
+      padding: 9px 18px; font-size: 13px; font-weight: 600;
+      color: var(--muted); cursor: pointer; border: none; background: none;
+      border-bottom: 2px solid transparent; margin-bottom: -2px;
+      font-family: inherit; transition: color 0.15s;
+    }
+    .order-tab:hover { color: var(--text); }
+    .order-tab.active { color: var(--green); border-bottom-color: var(--green); }
+    .order-tab .tab-count {
+      display: inline-flex; align-items: center; justify-content: center;
+      background: var(--green-light); color: var(--green-dark);
+      border-radius: 10px; font-size: 10px; font-weight: 700;
+      min-width: 18px; height: 18px; padding: 0 5px; margin-left: 6px;
+    }
+    .order-tab.active .tab-count { background: var(--green); color: #fff; }
+
+    /* Order card */
+    .order-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); margin-bottom: 1.25rem; overflow: hidden; transition: box-shadow 0.15s; }
+    .order-card:hover { box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+    .order-card-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.75rem; padding: 1rem 1.25rem; border-bottom: 1px solid var(--border); background: var(--bg); }
+    .order-number { font-weight: 700; font-family: monospace; font-size: 14px; }
+    .order-date   { font-size: 12px; color: var(--muted); margin-top: 2px; }
+    .order-total  { font-weight: 700; font-size: 15px; color: var(--green); }
+
+    /* Status pill */
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
+    .pill-pending   { background:#FEF3E2; color:#97650b; }
+    .pill-shipped   { background:#e3f0ff; color:#1565c0; }
+    .pill-delivered { background:#e8f5e9; color:#2e7d32; }
+    .pill-received  { background:var(--green-light); color:var(--green-dark); }
+    .pill-cancelled { background:#ffeaea; color:#c0392b; }
+
+    /* Pipeline */
+    .status-pipeline { display:flex; align-items:flex-start; padding:1.25rem 1.5rem 0.75rem; overflow-x:auto; gap:0; }
+    .pipeline-step { flex:1; display:flex; flex-direction:column; align-items:center; position:relative; min-width:72px; }
+    .pipeline-step:not(:last-child)::after { content:''; position:absolute; top:13px; left:calc(50% + 13px); width:calc(100% - 26px); height:2px; background:var(--border); z-index:0; }
+    .pipeline-step.done:not(:last-child)::after  { background:var(--green); }
+    .step-dot { width:26px; height:26px; border-radius:50%; z-index:1; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:700; border:2px solid var(--border); background:var(--surface); color:var(--muted); }
+    .pipeline-step.done   .step-dot { background:var(--green); border-color:var(--green); color:#fff; }
+    .pipeline-step.active .step-dot { border-color:var(--green); color:var(--green); font-size:14px; }
+    .pipeline-step.cancelled .step-dot { background:#e53935; border-color:#e53935; color:#fff; }
+    .step-label { font-size:10px; font-weight:600; margin-top:5px; text-align:center; color:var(--muted); line-height:1.3; }
+    .pipeline-step.done   .step-label { color:var(--green-dark); }
+    .pipeline-step.active .step-label { color:var(--green); }
+    .pipeline-step.cancelled .step-label { color:#e53935; }
+
+    /* Items */
+    .order-items { padding:0.75rem 1.25rem; border-top:1px solid var(--border); }
+    .order-item-row { display:flex; align-items:center; gap:0.75rem; padding:0.65rem 0; border-bottom:1px solid var(--border); }
+    .order-item-row:last-child { border-bottom:none; }
+    .item-emoji { font-size:26px; flex-shrink:0; width:38px; text-align:center; }
+    .item-info  { flex:1; min-width:0; }
+    .item-name  { font-size:13px; font-weight:600; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .item-sku   { font-size:11px; color:var(--faint); font-family:monospace; }
+    .item-qty   { font-size:12px; color:var(--muted); }
+    .item-price { font-size:13px; font-weight:700; color:var(--text); white-space:nowrap; }
+    .item-actions { display:flex; flex-direction:column; align-items:flex-end; gap:5px; flex-shrink:0; }
+
+    /* Action buttons */
+    .btn-confirm { display:inline-flex; align-items:center; gap:5px; background:var(--green); color:#fff; border:none; border-radius:var(--radius-sm); padding:8px 16px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:opacity 0.15s; white-space:nowrap; }
+    .btn-confirm:hover { opacity:0.87; }
+    .btn-confirm:disabled { opacity:0.5; cursor:not-allowed; }
+    .btn-review { display:inline-flex; align-items:center; gap:5px; background:var(--green-light); color:var(--green-dark); border:1px solid var(--green); border-radius:var(--radius-sm); padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:opacity 0.15s; white-space:nowrap; }
+    .btn-review:hover { opacity:0.82; }
+    .btn-reviewed { display:inline-flex; align-items:center; gap:5px; background:var(--bg); color:var(--muted); border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 14px; font-size:12px; font-weight:600; cursor:default; font-family:inherit; }
+
+    /* Order footer */
+    .order-card-foot { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; padding:0.85rem 1.25rem; border-top:1px solid var(--border); background:var(--bg); }
+    .foot-meta { font-size:12px; color:var(--muted); }
+    .foot-meta strong { color:var(--text); }
+
+    /* To-review highlight */
+    .order-card.to-review { border-color: var(--green); }
+    .to-review-banner { background:var(--green-light); color:var(--green-dark); font-size:12px; font-weight:600; padding:7px 1.25rem; display:flex; align-items:center; gap:6px; }
+
+    /* Empty / loading */
+    .empty-orders { text-align:center; padding:4rem 1rem; color:var(--muted); }
+    .empty-orders .big-emoji { font-size:52px; margin-bottom:1rem; }
+    .empty-orders h3 { font-size:18px; font-weight:700; color:var(--text); margin-bottom:0.5rem; }
+
+    /* Review modal */
+    .star-picker-modal { display:flex; gap:6px; margin-bottom:0.75rem; }
+    .star-btn-modal { font-size:28px; cursor:pointer; background:none; border:none; padding:2px; line-height:1; filter:grayscale(1); opacity:0.35; color:#f59e0b; transition:filter 0.1s, opacity 0.1s; }
+    .star-btn-modal.active { filter:none; opacity:1; }
+
+    @media (max-width:600px) {
+      .order-card-head { flex-direction:column; align-items:flex-start; }
+      .status-pipeline { padding:1rem 0.75rem 0.5rem; }
+      .order-tabs { overflow-x:auto; }
+    }
+  </style>
+</head>
+<body>
+<!-- HEADER -->
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:7px;flex-shrink:0;"><defs><linearGradient id="lg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#6366f1"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#lg)"/><path d="M10 20C10 16.7 12.7 14 16 14C18.3 14 19.8 15.5 21 17C22.2 15.5 23.7 14 26 14C29.3 14 32 16.7 32 20C32 23.3 29.3 26 26 26C23.7 26 22.2 24.5 21 23C19.8 24.5 18.3 26 16 26C12.7 26 10 23.3 10 20Z" stroke="white" stroke-width="2.2" fill="none" stroke-linejoin="round"/></svg>Shop<span>finity</span>
+    </a>
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" type="text" placeholder="Search in Shopfinity" autocomplete="off" />
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="window.location.href='index.html?login=merchant'" style="color:var(--muted); font-size:12px; border-style:dashed;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Merchant Portal
+      </button>
+      <button class="btn-icon cart-btn" onclick="openCart()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        Cart <span class="cart-count" style="display:none">0</span>
+      </button>
+      <button class="btn-icon" onclick="openAuthModal()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="signin-btn">Sign in</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div class="orders-page">
+    <div class="breadcrumb">
+      <a href="index.html">Home</a><span>&rsaquo;</span><span>My Orders</span>
+    </div>
+    <h1 class="orders-title">My Orders</h1>
+    <p class="orders-sub">Track your parcels, confirm delivery, and leave reviews.</p>
+
+    <!-- Tabs -->
+    <div class="order-tabs" id="orderTabs">
+      <button class="order-tab active" onclick="switchTab('all',this)">All orders <span class="tab-count" id="cnt-all">0</span></button>
+      <button class="order-tab" onclick="switchTab('active',this)">Active <span class="tab-count" id="cnt-active">0</span></button>
+      <button class="order-tab" onclick="switchTab('to-review',this)">To review <span class="tab-count" id="cnt-review">0</span></button>
+      <button class="order-tab" onclick="switchTab('reviewed',this)">Reviewed <span class="tab-count" id="cnt-reviewed">0</span></button>
+    </div>
+
+    <div id="ordersContainer">
+      <div class="empty-orders"><div class="big-emoji"><svg class="inline-icon" viewBox="0 0 24 24" ><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></g></svg></div><p>Loading&hellip;</p></div>
+    </div>
+  </div>
+</main>
+
+<!-- CART DRAWER -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h2>Your cart</h2>
+    <button class="close-btn" onclick="closeCart()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+  </div>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-footer">
+    <div class="cart-total"><span>Total</span><span id="cartTotal">&#8369;0</span></div>
+    <button class="btn btn-primary" onclick="checkout()">Checkout</button>
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAuthModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div id="loginForm">
+      <h2>Sign in</h2><p>Welcome back to Shopfinity</p>
+      <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com" /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="��������" /></div>
+      <button class="btn btn-primary" onclick="doLogin()">Sign in</button>
+      <div class="modal-footer">No account? <a onclick="showRegister()">Create one</a></div>
+    </div>
+    <div id="registerForm" style="display:none">
+      <h2>Create account</h2><p>Join Shopfinity today</p>
+      <div class="form-group"><label>Name</label><input type="text" id="regName" placeholder="Your name" /></div>
+      <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="you@example.com" /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="regPass" placeholder="Choose a password" /></div>
+      <button class="btn btn-primary" onclick="doRegister()">Create account</button>
+      <div class="modal-footer">Already have one? <a onclick="showLogin()">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ACCOUNT MODAL -->
+<div class="modal-overlay" id="accountModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAccountModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <div class="account-info">
+      <div class="account-avatar" id="accountInitials">AB</div>
+      <div class="account-name" id="accountName">User</div>
+      <div class="account-email" id="accountEmail">user@example.com</div>
+    </div>
+    <div class="account-actions">
+      <button class="btn btn-outline" onclick="openAddressesModal(); closeAccountModal()">
+        <svg class="inline-icon" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></g></svg>
+        My addresses
+      </button>
+      <button class="btn btn-outline" onclick="window.location.href='orders.html'; closeAccountModal()">My orders</button>
+      <button class="btn btn-primary" onclick="doSignOut()">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADDRESSES MODAL ===== -->
+<div class="modal-overlay" id="addressesModal">
+  <div class="modal addr-modal">
+    <button class="modal-close" onclick="closeAddressesModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+
+    <div class="addr-modal-head">
+      <div class="addr-modal-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <div>
+        <h2 style="font-size:17px;font-weight:700;margin-bottom:2px;">Address Selection</h2>
+        <p style="font-size:13px;color:var(--muted);margin:0;">Choose or add a delivery address.</p>
+      </div>
+    </div>
+
+    <div id="addrModalList" class="addr-list"></div>
+
+    <div class="addr-modal-footer">
+      <button class="addr-add-btn" id="addrAddBtn" onclick="toggleNewAddressForm()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add a new address
+      </button>
+    </div>
+
+    <div class="addr-new-form" id="addrNewForm">
+      <div class="addr-form-section-title">Contact information</div>
+      <div class="addr-field">
+        <label class="addr-label">Full name</label>
+        <input id="anContactName" type="text" class="addr-input" placeholder="Recipient's full name" />
+      </div>
+      <div class="addr-field">
+        <label class="addr-label">Phone number</label>
+        <input id="anContactNumber" type="tel" class="addr-input" placeholder="e.g. 09171234567" />
+      </div>
+
+      <div class="addr-form-section-title" style="margin-top:1.25rem;">Address</div>
+      <div class="addr-field">
+        <label class="addr-label">Full address</label>
+        <textarea id="anAddress" class="addr-textarea" placeholder="Street, Barangay, City, Province, ZIP Code"></textarea>
+      </div>
+
+      <div class="addr-form-section-title" style="margin-top:1.25rem;">Options</div>
+      <div class="addr-field">
+        <label class="addr-label">Label as</label>
+        <div class="addr-label-chips">
+          <button type="button" class="addr-chip" onclick="selectLabelChip(this,'Home')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home</button>
+          <button type="button" class="addr-chip" onclick="selectLabelChip(this,'Work')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Work</button>
+          <button type="button" class="addr-chip" onclick="selectLabelChip(this,'Other')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Other</button>
+        </div>
+        <input id="anLabel" type="hidden" value="" />
+      </div>
+
+      <label class="addr-default-row">
+        <span>
+          <span class="addr-default-label">Set as default address</span>
+          <span class="addr-default-sub">Pre-selected at checkout</span>
+        </span>
+        <span class="addr-toggle-wrap">
+          <input type="checkbox" id="anIsDefault" class="addr-toggle-input" />
+          <span class="addr-toggle-track"><span class="addr-toggle-thumb"></span></span>
+        </span>
+      </label>
+
+      <div class="addr-form-actions">
+        <button class="btn btn-primary addr-save-btn" onclick="saveNewAddress()">Save address</button>
+        <button class="btn btn-outline" onclick="toggleNewAddressForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- CHECKOUT MODALS (needed since app.js checkout() can open them) -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal" style="max-width:520px;max-height:90vh;overflow-y:auto;">
+    <button class="modal-close" onclick="closeCheckoutModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h2>Checkout</h2>
+    <div style="background:var(--surface);border-radius:10px;padding:1rem;margin-bottom:1.25rem;">
+      <div id="checkoutItems" style="display:flex;flex-direction:column;gap:0.5rem;"></div>
+      <div style="border-top:1px solid var(--border);margin-top:0.75rem;padding-top:0.75rem;font-size:14px;display:flex;flex-direction:column;gap:0.4rem;">
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted)">Subtotal</span><span id="checkoutSubtotal">u{20B1}0</span></div>
+        <div style="display:flex;justify-content:space-between;"><span style="color:var(--muted)">Shipping</span><span id="checkoutShipping">u{20B1}99</span></div>
+        <div style="display:flex;justify-content:space-between;font-weight:700;font-size:15px;"><span>Total</span><span id="checkoutTotal">u{20B1}0</span></div>
+      </div>
+    </div>
+    <div style="margin-bottom:1rem;">
+      <h3 style="font-size:14px;font-weight:600;margin-bottom:0.75rem;">Delivery details</h3>
+      <div class="form-group" style="margin-bottom:0.75rem;">
+        <label for="checkoutContactName">Contact name</label>
+        <input id="checkoutContactName" type="text" placeholder="Full name of recipient" style="width:100%;height:40px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;font-family:inherit;background:var(--surface);color:inherit;box-sizing:border-box;" />
+      </div>
+      <div class="form-group" style="margin-bottom:0.75rem;">
+        <label for="checkoutContactNumber">Contact number</label>
+        <input id="checkoutContactNumber" type="tel" placeholder="e.g. 09171234567" style="width:100%;height:40px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;font-family:inherit;background:var(--surface);color:inherit;box-sizing:border-box;" />
+      </div>
+      <div class="form-group">
+        <label for="checkoutAddress">Delivery address</label>
+        <textarea id="checkoutAddress" rows="3" placeholder="Street, Barangay, City, Province, ZIP" style="width:100%;border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:14px;font-family:inherit;background:var(--surface);color:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Payment method</label>
+      <select id="checkoutPayment" style="width:100%;height:40px;border:1px solid var(--border);border-radius:8px;padding:0 12px;font-size:14px;font-family:inherit;background:var(--surface);">
+        <option value="">Select payment method...</option>
+        <option value="cash_on_delivery">Cash on Delivery</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="margin-top:0.5rem" onclick="placeOrder()">Place order</button>
+  </div>
+</div>
+<div class="modal-overlay" id="orderSuccessModal">
+  <div class="modal" style="max-width:440px; text-align:center; padding:2rem 1.75rem; border-radius:20px;">
+    <div style="width:72px; height:72px; background:var(--green-light); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem;">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <h2 style="font-size:22px; font-weight:700; margin-bottom:0.35rem;">Order placed!</h2>
+    <p style="color:var(--muted); font-size:14px; margin-bottom:1.5rem;">Thank you for your purchase. We'll get it ready for delivery.</p>
+    <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:1rem 1.25rem; margin-bottom:1rem; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; padding-bottom:0.6rem; border-bottom:1px solid var(--border); margin-bottom:0.6rem;">
+        <span style="color:var(--muted); font-weight:500;">Order number</span>
+        <span id="successOrderNumber" style="font-weight:700; font-family:monospace; font-size:13px; color:var(--text);"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; padding-bottom:0.6rem; border-bottom:1px solid var(--border); margin-bottom:0.6rem;">
+        <span style="color:var(--muted); font-weight:500;">Payment</span>
+        <span style="font-weight:600; color:var(--text);">Cash on Delivery</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
+        <span style="font-weight:600;">Amount due on delivery</span>
+        <span id="successOrderTotal" style="font-weight:700; font-size:15px; color:var(--green);"></span>
+      </div>
+    </div>
+    <div id="veraCredentialBanner" style="display:flex; align-items:center; gap:10px; background:#1a1a2e; border-radius:12px; padding:0.85rem 1.1rem; margin-bottom:1rem; text-align:left;">
+      <svg width="18" height="18" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+        <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z" fill="#a78bfa" opacity="0.3" stroke="#a78bfa" stroke-width="6"/>
+        <path d="M50 18 L78 33 L78 67 L50 82 L22 67 L22 33 Z" fill="#a78bfa" opacity="0.4"/>
+        <circle cx="50" cy="44" r="10" fill="#a78bfa"/>
+        <rect x="46" y="52" width="8" height="14" rx="2" fill="#a78bfa"/>
+      </svg>
+      <span style="font-size:13px; font-weight:600; color:#fff;">Purchase credential saved to VERA Vault!</span>
+    </div>
+    <button class="btn btn-primary" style="width:100%; margin-top:0.25rem;" onclick="closeOrderSuccess(); renderOrders()">View my orders</button>
+  </div>
+</div>
+
+<!-- WRITE REVIEW MODAL -->
+<div class="modal-overlay" id="reviewModal">
+  <div class="modal" style="max-width:480px;">
+    <button class="modal-close" onclick="closeReviewModal()"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg></button>
+    <h2>Write a review</h2>
+    <p id="reviewModalProductName" style="color:var(--muted);font-size:14px;margin-bottom:1.25rem;"></p>
+    <div>
+      <div style="font-size:13px;font-weight:600;margin-bottom:8px;">Your rating</div>
+      <div class="star-picker-modal" id="reviewStarPicker">
+        <button class="star-btn-modal active" data-val="1" onclick="setReviewStar(1)"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+        <button class="star-btn-modal active" data-val="2" onclick="setReviewStar(2)"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+        <button class="star-btn-modal active" data-val="3" onclick="setReviewStar(3)"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+        <button class="star-btn-modal active" data-val="4" onclick="setReviewStar(4)"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+        <button class="star-btn-modal active" data-val="5" onclick="setReviewStar(5)"><svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" stroke="none"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></button>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top:0.75rem;">
+      <label>Your review</label>
+      <textarea id="reviewModalText" rows="4" style="width:100%;border:1px solid var(--border);border-radius:var(--radius-sm);padding:10px 12px;font-size:13px;font-family:inherit;outline:none;resize:vertical;" placeholder="Share your experience with this product�"></textarea>
+    </div>
+    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 1rem;">
+      <input type="checkbox" id="reviewModalUseVera" />
+      <label for="reviewModalUseVera" style="font-size: 13px; margin: 0; font-weight: 600; color: var(--green);"><svg class="inline-icon" viewBox="0 0 24 24" ><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></g></svg> Use VERA (Submit Anonymous Verified Review)</label>
+    </div>
+    <button class="btn btn-primary" style="margin-top:0.25rem" onclick="submitModalReview()">Post review</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== CONFIRM RECEIPT MODAL ===== -->
+<div id="receiptConfirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:900; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:20px; padding:2rem 1.75rem; max-width:400px; width:90%; box-shadow:0 24px 64px rgba(0,0,0,0.18); text-align:center;">
+    <div style="width:64px; height:64px; background:#eef2ff; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem;">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#6366f1" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    </div>
+    <h3 style="font-size:18px; font-weight:700; margin-bottom:0.5rem; color:#111827;">Confirm delivery</h3>
+    <p style="font-size:14px; color:#6b7280; margin-bottom:1.5rem; line-height:1.6;">Please confirm that you have physically received this parcel. This action cannot be undone.</p>
+    <div style="display:flex; gap:10px;">
+      <button id="receiptConfirmCancel" style="flex:1; padding:11px 0; border:1.5px solid #e4e7f0; border-radius:10px; font-size:14px; font-weight:600; background:#fff; color:#6b7280; cursor:pointer; font-family:inherit; transition:background 0.15s;">Cancel</button>
+      <button id="receiptConfirmOk" style="flex:1; padding:11px 0; border:none; border-radius:10px; font-size:14px; font-weight:700; background:linear-gradient(135deg,#6366f1,#4f46e5); color:#fff; cursor:pointer; font-family:inherit; box-shadow:0 2px 8px rgba(99,102,241,0.3); transition:opacity 0.15s;">Yes, I received it</button>
+    </div>
+  </div>
+</div>
+
+<script src="supabase-config.js"></script>
+<script src="app.js"></script>
+<script>
+/* =====================================================
+   ORDERS PAGE � tab state & rendering
+   ===================================================== */
+
+const PIPELINE = [
+  { key:'pending',   label:'Order\nplaced',      icon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>' },
+  { key:'shipped',   label:'Shipped',             icon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/></svg>' },
+  { key:'delivered', label:'Out for\ndelivery',   icon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 17a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V9.5C2 7 4 5 6.5 5H18c2.2 0 4 1.8 4 4v8z"/><polyline points="15,9 18,9 18,11"/><path d="M6.5 5C6 3.5 4.5 2 3 2"/><path d="M9.5 5C10 3.5 11.5 2 13 2"/></svg>' },
+  { key:'received',  label:'Received',            icon:'<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>' },
+];
+const STATUS_IDX = { pending:0, shipped:1, delivered:2, received:3, cancelled:-1 };
+
+let allOrders       = [];
+let activeTab       = 'all';
+let reviewedSet     = new Set();  // "productId:orderId" keys already reviewed by this user
+let userReviews     = [];         // full review rows for the "Reviewed" tab
+let reviewTargetProductId = null;
+let reviewTargetItemRowId = null;
+let reviewTargetOrderId   = null;
+let reviewStarRating      = 5;
+
+/* -- Tab switch -- */
+function switchTab(tab, btn) {
+  activeTab = tab;
+  document.querySelectorAll('.order-tab').forEach(t => t.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderTabContent();
+}
+
+function setActiveTabUI(tab) {
+  activeTab = tab;
+  const tabs = document.querySelectorAll('.order-tab');
+  const map  = { 'all': 0, 'active': 1, 'to-review': 2, 'reviewed': 3 };
+  tabs.forEach((t, i) => t.classList.toggle('active', i === (map[tab] ?? 0)));
+}
+
+/* -- Master load: fetch orders + existing reviews -- */
+async function renderOrders() {
+  const container = document.getElementById('ordersContainer');
+
+  if (!currentUser) {
+    container.innerHTML = `<div class="empty-orders">
+      <div class="big-emoji"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg></div>
+      <h3>Sign in to view your orders</h3>
+      <p>Track your parcels and confirm deliveries.</p>
+      <button class="btn btn-primary" style="margin-top:1rem;width:auto;padding:10px 28px" onclick="openAuthModal()">Sign in</button>
+    </div>`;
+    updateTabCounts([], new Set());
+    return;
+  }
+
+  container.innerHTML = `<div class="empty-orders"><div class="big-emoji"><svg class="inline-icon" viewBox="0 0 24 24" ><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="16.5" y1="9.4" x2="7.5" y2="4.21"></line><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></g></svg></div><p>Loading your orders�</p></div>`;
+
+  try {
+    // Fetch orders and all reviews by this user (both normal and VERA) in parallel
+    // Select only columns guaranteed to exist; include order_id for per-order review tracking
+    const [orders, myReviews] = await Promise.all([
+      loadUserOrders(),
+      db(`/reviews?user_id=eq.${currentUser.id}&select=id,product_id,order_id,rating,text,created_at,user_name,verified_purchase&order=created_at.desc`)
+        .catch(() => db(`/reviews?user_id=eq.${currentUser.id}&select=id,product_id,order_id,rating,text,created_at,user_name&order=created_at.desc`)
+        .catch(() => [])),
+    ]);
+    allOrders = orders || [];
+
+    // userReviews = everything this user wrote (normal + VERA path both use currentUser.id)
+    userReviews = myReviews || [];
+
+    // Build reviewedSet: keyed by "productId:orderId" so each order tracks its own review state.
+    // A review with a null order_id (legacy) only marks itself, not all orders.
+    reviewedSet = new Set(userReviews.map(r => `${r.product_id}:${r.order_id || ''}`));
+
+    // Try to also fetch id_verification_score for VERAfied badge (non-critical)
+    try {
+      const withScore = await db(`/reviews?user_id=eq.${currentUser.id}&select=id,product_id,order_id,rating,text,created_at,user_name,verified_purchase,id_verification_score&order=created_at.desc`);
+      if (withScore && withScore.length > 0) {
+        userReviews = withScore;
+        // Rebuild reviewedSet with the more complete data
+        reviewedSet = new Set(userReviews.map(r => `${r.product_id}:${r.order_id || ''}`));
+      }
+    } catch(_) { /* column may not exist — ignore */ }
+
+  } catch (err) {
+    console.error('[SF] renderOrders failed:', err);
+    allOrders = [];
+    reviewedSet = new Set();
+  }
+
+  updateTabCounts(allOrders, reviewedSet);
+  renderTabContent();
+}
+
+// Check if a product+order combo has been reviewed.
+// Falls back to product-only match when migration hasn't run (order_id is null in DB).
+function isReviewed(productId, orderId) {
+  // We only check for an exact order_id match.
+  // Legacy reviews (without an order_id) will no longer blanket-mark all orders as reviewed.
+  return reviewedSet.has(`${productId}:${orderId}`);
+}
+
+function updateTabCounts(orders, reviewed) {
+  const active   = orders.filter(o => !['received','cancelled'].includes(o.order_status));
+  const toReview = orders.filter(o =>
+    o.order_status === 'received' &&
+    (o.items || []).some(i => !isReviewed(i.product_id, o.id))
+  );
+  document.getElementById('cnt-all').textContent      = orders.length;
+  document.getElementById('cnt-active').textContent   = active.length;
+  document.getElementById('cnt-review').textContent   = toReview.reduce(
+    (sum, o) => sum + (o.items || []).filter(i => !isReviewed(i.product_id, o.id)).length, 0
+  );
+  const reviewedEl = document.getElementById('cnt-reviewed');
+  if (reviewedEl) reviewedEl.textContent = userReviews.length;
+}
+
+/* -- Filter and render for the active tab -- */
+function renderTabContent() {
+  const container = document.getElementById('ordersContainer');
+
+  // Reviewed tab � show a summary of all reviews the user has left
+  if (activeTab === 'reviewed') {
+    if (userReviews.length === 0) {
+      container.innerHTML = `<div class="empty-orders">
+        <div class="big-emoji"><svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg></div>
+        <h3>No reviews yet</h3><p>Reviews you leave on received orders will appear here.</p>
+      </div>`;
+      return;
+    }
+
+    // Build a map of product_id ? product info from allOrders items
+    const productInfoMap = {};
+    allOrders.forEach(o => {
+      (o.items || []).forEach(i => {
+        if (i.product && !productInfoMap[i.product_id]) {
+          productInfoMap[i.product_id] = { ...i.product, order_number: o.order_number, order_id: o.id };
+        }
+      });
+    });
+
+    const stars = (n) => '★'.repeat(Math.round(n || 0)) + '☆'.repeat(5 - Math.round(n || 0));
+
+    container.innerHTML = `
+      <div style="display:flex; flex-direction:column; gap:1rem;">
+        ${userReviews.map(r => {
+          const p = productInfoMap[r.product_id];
+          const name = p?.product_name || p?.name || 'Unknown product';
+          const img  = p?.image_urls?.[0];
+          const thumb = img
+            ? `<img src="${img}" alt="${name}" style="width:48px;height:48px;object-fit:cover;border-radius:8px;flex-shrink:0;border:1px solid var(--border);" />`
+            : `<div style="width:48px;height:48px;background:var(--green-light);border-radius:8px;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px;">??</div>`;
+          const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-PH',{year:'numeric',month:'short',day:'numeric'}) : '';
+          const isVera = (r.id_verification_score || 0) >= 80;
+          const veraBadge = isVera
+            ? `<span style="display:inline-flex;align-items:center;gap:4px;background:#f3e8ff;color:#7c3aed;border:1px solid #c4b5fd;border-radius:20px;padding:2px 8px;font-size:11px;font-weight:700;">
+                <svg width="11" height="11" viewBox="0 0 100 100" fill="none"><path d="M50 5L90 27.5L90 72.5L50 95L10 72.5L10 27.5Z" fill="#7c3aed" opacity="0.2" stroke="#7c3aed" stroke-width="6"/><circle cx="50" cy="44" r="10" fill="#7c3aed"/><rect x="46" y="52" width="8" height="14" rx="2" fill="#7c3aed"/></svg>
+                VERAfied
+              </span>`
+            : '';
+          const orderRef = p?.order_number ? `<span style="font-size:11px;color:var(--faint);font-family:monospace;">${p.order_number}</span>` : '';
+          return `
+            <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:1rem 1.25rem;display:flex;gap:1rem;align-items:flex-start;">
+              ${thumb}
+              <div style="flex:1;min-width:0;">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:0.5rem;flex-wrap:wrap;margin-bottom:4px;">
+                  <a href="product.html?id=${encodeURIComponent(r.product_id)}" style="font-size:14px;font-weight:700;color:var(--text);text-decoration:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${name}</a>
+                  <span style="font-size:12px;color:var(--faint);white-space:nowrap;">${date}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;">
+                  <span style="color:#f59e0b;font-size:15px;letter-spacing:1px;">${stars(r.rating)}</span>
+                  <span style="font-size:12px;color:var(--muted);font-weight:600;">${r.rating}/5</span>
+                  ${veraBadge}
+                  ${orderRef}
+                </div>
+                <p style="font-size:13px;color:var(--muted);line-height:1.6;margin:0;">${r.text || ''}</p>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>`;
+    return;
+  }
+
+  let list;
+  if (activeTab === 'active') {
+    list = allOrders.filter(o => !['received','cancelled'].includes(o.order_status));
+  } else if (activeTab === 'to-review') {
+    list = allOrders.filter(o =>
+      o.order_status === 'received' &&
+      (o.items || []).some(i => !isReviewed(i.product_id, o.id))
+    );
+  } else {
+    list = allOrders;
+  }
+
+  if (list.length === 0) {
+    const msgs = {
+      'all':       ['<svg class="inline-icon" viewBox="0 0 24 24" ><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></g></svg>', 'No orders yet',           'When you place an order it will show up here.', true],
+      'active':    ['<svg class="inline-icon" viewBox="0 0 24 24" ><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></g></svg>', 'No active orders',         'All your parcels have been delivered!',         false],
+      'to-review': ['<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>', 'Nothing to review', 'Products you\'ve received will appear here once delivered.', false],
+    };
+    const [emoji, title, sub, showBtn] = msgs[activeTab] || msgs['all'];
+    container.innerHTML = `<div class="empty-orders">
+      <div class="big-emoji">${emoji}</div>
+      <h3>${title}</h3><p>${sub}</p>
+      ${showBtn ? `<a href="products.html" class="btn btn-primary" style="margin-top:1rem;width:auto;padding:10px 28px;display:inline-block;">Start shopping</a>` : ''}
+    </div>`;
+    return;
+  }
+
+  container.innerHTML = list.map(o => buildOrderCard(o)).join('');
+}
+</script>
+<script>
+/* -- Build one order card -- */
+function buildOrderCard(order) {
+  const status      = (order.order_status || 'pending').toLowerCase();
+  const isCancelled = status === 'cancelled';
+  const currentIdx  = STATUS_IDX[status] ?? 0;
+  const date = new Date(order.created_at).toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+  const total = Number(order.total || 0);
+
+  /* Pipeline */
+  const pipelineHTML = isCancelled
+    ? `<div class="status-pipeline"><div class="pipeline-step cancelled"><div class="step-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div><div class="step-label">Cancelled</div></div></div>`
+    : `<div class="status-pipeline">${PIPELINE.map((step,idx) => {
+        const cls = idx < currentIdx ? 'done' : idx === currentIdx ? 'active' : '';
+        return `<div class="pipeline-step ${cls}">
+          <div class="step-dot">${idx < currentIdx ? '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>' : step.icon}</div>
+          <div class="step-label">${step.label.replace('\n','<br>')}</div>
+        </div>`;
+      }).join('')}</div>`;
+
+  /* Items */
+  const hasItems = order.items && order.items.length > 0;
+  const itemsHTML = hasItems
+    ? order.items.map(item => {
+        const p      = item.product;
+        const name   = p ? p.product_name : 'Product';
+        const imgs   = p && Array.isArray(p.image_urls) ? p.image_urls.filter(Boolean) : [];
+        const thumb = `<img src="${imgs.length > 0 ? imgs[0] : 'https://placehold.co/400x400/e0e0e0/888888.png?text=No+Image'}" alt="${name}" style="width:38px;height:38px;object-fit:cover;border-radius:6px;border:1px solid var(--border);" />`;
+        const sku    = p ? (p.sku || '') : '';
+        const pid    = item.product_id;
+        const productLink = `product.html?id=${encodeURIComponent(pid)}`;
+        const alreadyReviewed = isReviewed(pid, order.id);
+
+        // Review / confirm button logic � only on received orders
+        let actionBtn = '';
+        if (status === 'received') {
+          if (alreadyReviewed) {
+            actionBtn = `<span class="btn-reviewed"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;"><polyline points="20 6 9 17 4 12"/></svg> Reviewed</span>`;
+          } else {
+            actionBtn = `<button class="btn-review" onclick="openReviewModal('${pid}','${item.id}','${name.replace(/'/g,"\\'")}','${order.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> Review</button>`;
+          }
+        }
+        // No review button for any other status
+
+        return `<div class="order-item-row" id="item-row-${item.id}">
+          <a href="${productLink}" class="item-emoji" style="text-decoration:none;display:flex;align-items:center;justify-content:center;width:38px;flex-shrink:0;" title="View product">${thumb}</a>
+          <div class="item-info">
+            <a href="${productLink}" class="item-name" style="text-decoration:none;color:var(--text);">${name}</a>
+            ${sku ? `<div class="item-sku">${sku}</div>` : ''}
+            <div class="item-qty">Qty: ${item.quantity}</div>
+          </div>
+          <div class="item-actions">
+            <div class="item-price">₱${Number(item.total_price||0).toLocaleString()}</div>
+            ${actionBtn}
+          </div>
+        </div>`;
+      }).join('')
+    : `<div style="font-size:13px;color:var(--muted);padding:0.5rem 0;">No item details available.</div>`;
+
+  /* Confirm receipt button (shown in footer when delivered) */
+  const confirmBtn = status === 'delivered'
+    ? `<button class="btn-confirm" id="confirm-${order.id}" onclick="handleConfirmReceipt('${order.id}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Confirm receipt
+       </button>`
+    : '';
+
+  /* Highlight card if it has unreviewed items */
+  const hasUnreviewed = status === 'received' &&
+    (order.items||[]).some(i => !isReviewed(i.product_id, order.id));
+  const cardClass = hasUnreviewed ? 'order-card to-review' : 'order-card';
+  const banner    = hasUnreviewed
+    ? `<div class="to-review-banner"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg> You have unreviewed items in this order</div>`
+    : '';
+
+  return `<div class="${cardClass}" id="order-${order.id}">
+    ${banner}
+    <div class="order-card-head">
+      <div>
+        <div class="order-number">${order.order_number || '#'+order.id.slice(0,8).toUpperCase()}</div>
+        <div class="order-date">${date}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <span class="status-pill pill-${status}">${status.charAt(0).toUpperCase()+status.slice(1)}</span>
+        <div class="order-total">₱${total.toLocaleString()}</div>
+      </div>
+    </div>
+    ${pipelineHTML}
+    <div class="order-items">${itemsHTML}</div>
+    <div class="order-card-foot">
+      <div class="foot-meta">
+        Payment: <strong>${(order.payment_method||'').replace(/_/g,' ').toUpperCase()}</strong>
+        &nbsp;<svg width="4" height="4" viewBox="0 0 4 4" fill="currentColor" style="vertical-align:middle;opacity:0.5;"><circle cx="2" cy="2" r="2"/></svg>&nbsp; Shipping: <strong>&#8369;${Number(order.shipping_fee||0).toLocaleString()}</strong>
+      </div>
+      ${confirmBtn}
+    </div>
+  </div>`;
+}
+
+/* -- Confirm receipt -- */
+async function handleConfirmReceipt(orderId) {
+  // Show custom confirm modal instead of native browser confirm()
+  const confirmed = await new Promise((resolve) => {
+    const modal  = document.getElementById('receiptConfirmModal');
+    const okBtn  = document.getElementById('receiptConfirmOk');
+    const cancel = document.getElementById('receiptConfirmCancel');
+    modal.style.display = 'flex';
+
+    function cleanup(result) {
+      modal.style.display = 'none';
+      okBtn.removeEventListener('click', onOk);
+      cancel.removeEventListener('click', onCancel);
+      modal.onclick = null;
+      resolve(result);
+    }
+    const onOk     = () => cleanup(true);
+    const onCancel = () => cleanup(false);
+    okBtn.addEventListener('click', onOk);
+    cancel.addEventListener('click', onCancel);
+    modal.onclick = (e) => { if (e.target === modal) cleanup(false); };
+  });
+
+  if (!confirmed) return;
+
+  const btn = document.getElementById(`confirm-${orderId}`);
+  if (btn) { btn.disabled = true; btn.textContent = 'Confirming�'; }
+
+  let ok = false;
+  try {
+    ok = await confirmReceipt(orderId);
+  } catch(e) {
+    console.error('[SF] confirmReceipt error:', e);
+  }
+
+  if (!ok) {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Confirm receipt'; }
+    return;
+  }
+
+  // Reload � wrapped in try/catch so a failed reload doesn't leave the page broken
+  try {
+    allOrders = await loadUserOrders();
+    if (currentUser) {
+      const freshReviews = await db(`/reviews?user_id=eq.${currentUser.id}&select=id,product_id,order_id,rating,text,created_at,user_name&order=created_at.desc`).catch(() => []) || [];
+      userReviews = freshReviews;
+      reviewedSet = new Set(freshReviews.map(r => `${r.product_id}:${r.order_id || ''}`));
+    }
+  } catch(e) {
+    console.error('[SF] Failed to reload orders after confirm:', e);
+    // Still re-render with whatever we have
+  }
+
+  updateTabCounts(allOrders, reviewedSet);
+  // We no longer forcefully switch to the 'to-review' tab, so the user stays where they are
+  renderTabContent();
+}
+
+/* -- Review modal -- */
+function openReviewModal(productId, itemRowId, productName, orderId) {
+  reviewTargetProductId = productId;
+  reviewTargetItemRowId = itemRowId;
+  reviewTargetOrderId   = orderId || null;
+  reviewStarRating      = 5;
+  document.getElementById('reviewModalProductName').textContent = `Reviewing: ${productName}`;
+  document.getElementById('reviewModalText').value = '';
+  // Always start unchecked � user must explicitly opt in to VERA
+  const veraCb = document.getElementById('reviewModalUseVera');
+  if (veraCb) veraCb.checked = false;
+  setReviewStar(5);
+  document.getElementById('reviewModal').classList.add('open');
+}
+
+function closeReviewModal() {
+  document.getElementById('reviewModal').classList.remove('open');
+  reviewTargetProductId = null;
+  reviewTargetItemRowId = null;
+  reviewTargetOrderId   = null;
+}
+
+function setReviewStar(val) {
+  reviewStarRating = val;
+  document.querySelectorAll('.star-btn-modal').forEach(btn => {
+    btn.classList.toggle('active', +btn.dataset.val <= val);
+  });
+}
+
+async function submitModalReview() {
+  const text = document.getElementById('reviewModalText').value.trim();
+  const useVera = document.getElementById('reviewModalUseVera')?.checked || false;
+  if (!text) { showToast('Please write something before posting'); return; }
+  if (!reviewTargetProductId) return;
+
+  // Guard: if VERA is selected but the extension isn't detected, warn the user
+  if (useVera && !window._veraExtensionReady) {
+    showToast('⚠️ VERA extension not detected. Please install and reload, or uncheck Use VERA.');
+    return;
+  }
+
+  const postBtn = document.querySelector('#reviewModal .btn-primary');
+  postBtn.textContent = 'Posting�'; postBtn.disabled = true;
+
+  const ok = await submitReview(reviewTargetProductId, reviewStarRating, text, true, useVera, reviewTargetOrderId);
+
+  postBtn.textContent = 'Post review'; postBtn.disabled = false;
+
+  if (ok) {
+    // Mark this product as reviewed locally � use product-only key for pre-migration compat
+    reviewedSet.add(`${reviewTargetProductId}:${reviewTargetOrderId || ''}`);
+    if (!reviewTargetOrderId) {
+      reviewedSet.add(`${reviewTargetProductId}:`); // Only trigger legacy fallback if there really is no order_id
+    }
+    // Add to userReviews for immediate Reviewed tab display
+    userReviews.push({
+      id: `local-${Date.now()}`,
+      product_id: reviewTargetProductId,
+      rating:     reviewStarRating,
+      text:       document.getElementById('reviewModalText')?.value?.trim() || '',
+      created_at: new Date().toISOString(),
+      user_name:  document.getElementById('reviewModalUseVera')?.checked ? 'VERA Verified Buyer' : (currentUser?.name || 'You'),
+      id_verification_score: document.getElementById('reviewModalUseVera')?.checked ? 100 : 0,
+    });
+    closeReviewModal();
+    updateTabCounts(allOrders, reviewedSet);
+    renderTabContent();
+  }
+}
+
+/* -- Init -- */
+document.addEventListener('DOMContentLoaded', async () => {
+  loadSession();
+  updateCartUI();
+  updateAccountUI();
+
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('open');
+    });
+  });
+  document.getElementById('cartOverlay')?.addEventListener('click', closeCart);
+  document.querySelectorAll('.search-input').forEach(el => el.addEventListener('keydown', handleSearch));
+  document.getElementById('loginPass')?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+  if (currentUser) await loadCartFromDB();
+  await renderOrders();
+});
+</script>
+</body>
+</html>

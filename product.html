@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Shopfinity &mdash; Product</title>
+  <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+  <link rel="stylesheet" href="style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ===== PRODUCT DETAIL PAGE ===== */
+    .pd-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.1fr 300px;
+      gap: 2rem;
+      align-items: start;
+      margin-bottom: 3rem;
+    }
+    /* Left: image gallery */
+    .pd-gallery { display: flex; flex-direction: column; gap: 12px; }
+    .pd-main-img {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 120px;
+      user-select: none;
+    }
+    .pd-thumbs { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pd-thumb {
+      width: 64px; height: 64px;
+      background: var(--bg);
+      border: 2px solid var(--border);
+      border-radius: var(--radius-sm);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 26px;
+      cursor: pointer;
+      transition: border-color 0.15s;
+    }
+    .pd-thumb.active, .pd-thumb:hover { border-color: var(--green); }
+    /* Middle: info */
+    .pd-info { display: flex; flex-direction: column; gap: 1rem; }
+    .pd-brand { font-size: 12px; color: var(--green); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    .pd-name { font-size: 22px; font-weight: 700; line-height: 1.3; color: var(--text); }
+    .pd-meta { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .pd-stars { color: #f59e0b; font-size: 15px; font-weight: 600; }
+    .pd-review-count { font-size: 13px; color: var(--green); cursor: pointer; font-weight: 500; }
+    .pd-review-count:hover { text-decoration: underline; }
+    .pd-badges { display: flex; gap: 8px; flex-wrap: wrap; }
+    .pd-badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 4px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 600;
+    }
+    .pd-badge.green { background: var(--green-light); color: var(--green-dark); }
+    .pd-badge.amber { background: #FEF3E2; color: #97650b; }
+    .pd-price-row { display: flex; align-items: baseline; gap: 10px; }
+    .pd-price { font-size: 32px; font-weight: 700; color: var(--green); }
+    .pd-price-note { font-size: 13px; color: var(--muted); }
+    .pd-divider { border: none; border-top: 1px solid var(--border); margin: 0; }
+    .pd-desc { font-size: 14px; color: var(--muted); line-height: 1.75; }
+    .pd-section-label { font-size: 13px; font-weight: 600; color: var(--text); margin-bottom: 6px; }
+    .pd-qty-row { display: flex; align-items: center; gap: 10px; }
+    .pd-qty-input {
+      width: 70px; height: 40px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      text-align: center; font-size: 15px; outline: none; font-family: inherit;
+    }
+    .pd-qty-input:focus { border-color: var(--green); }
+    /* Right: buy box */
+    .pd-buybox {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      position: sticky;
+      top: 76px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .pd-buybox-price { font-size: 26px; font-weight: 700; color: var(--green); }
+    .pd-shipping { font-size: 13px; color: var(--muted); }
+    .pd-shipping span { color: var(--green); font-weight: 600; }
+    .pd-stock-row { display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+    .pd-stock-row.in  { color: #16a34a; }
+    .pd-stock-row.low { color: #97650b; }
+    .pd-stock-row.out { color: #e53935; }
+    .pd-stock-dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; flex-shrink: 0; }
+    .pd-buybox-qty {
+      width: 100%; height: 40px;
+      border: 1px solid var(--border); border-radius: var(--radius-sm);
+      padding: 0 12px; font-size: 14px; font-family: inherit;
+      background: var(--surface); color: var(--text); outline: none;
+    }
+    .pd-buybox-qty:focus { border-color: var(--green); }
+    /* Reviews */
+    .pd-reviews-section { margin-top: 2rem; }
+    .pd-reviews-header { font-size: 18px; font-weight: 700; margin-bottom: 1.25rem; }
+    .pd-rating-summary {
+      display: flex; align-items: center; gap: 2rem;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;
+      flex-wrap: wrap; gap: 1.5rem;
+    }
+    .pd-rating-big { text-align: center; }
+    .pd-rating-big .num { font-size: 48px; font-weight: 700; color: var(--text); line-height: 1; }
+    .pd-rating-big .stars { font-size: 20px; color: #f59e0b; margin: 4px 0; }
+    .pd-rating-big .total { font-size: 12px; color: var(--muted); }
+    .pd-rating-bars { flex: 1; min-width: 180px; display: flex; flex-direction: column; gap: 6px; }
+    .pd-bar-row { display: flex; align-items: center; gap: 8px; font-size: 12px; }
+    .pd-bar-row .label { width: 36px; color: var(--green); font-weight: 500; cursor: pointer; white-space: nowrap; }
+    .pd-bar-row .label:hover { text-decoration: underline; }
+    .pd-bar-track { flex: 1; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+    .pd-bar-fill { height: 100%; background: #f59e0b; border-radius: 4px; transition: width 0.4s; }
+    .pd-bar-row .pct { width: 32px; text-align: right; color: var(--muted); }
+    .review-list { display: flex; flex-direction: column; gap: 1px; }
+    .review-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.25rem; margin-bottom: 10px;
+    }
+    .review-card-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 8px; flex-wrap: wrap; }
+    .review-card-author { font-size: 13px; font-weight: 700; }
+    .review-card-date { font-size: 12px; color: var(--faint); }
+    .review-card-stars { color: #f59e0b; font-size: 14px; margin-bottom: 4px; }
+    .review-card-text { font-size: 13px; color: var(--muted); line-height: 1.65; }
+    .review-card-badges { display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap; }
+    .review-empty { text-align: center; padding: 2.5rem; color: var(--muted); font-size: 14px; }
+    /* Write review */
+    .write-review-box {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 1.5rem; margin-bottom: 1.5rem;
+    }
+    .write-review-box h3 { font-size: 15px; font-weight: 700; margin-bottom: 1rem; }
+    .star-picker { display: flex; gap: 6px; margin-bottom: 1rem; }
+    .star-btn {
+      font-size: 24px; cursor: pointer; background: none; border: none;
+      padding: 2px; line-height: 1; filter: grayscale(1); opacity: 0.4;
+      color: #f59e0b;
+      transition: filter 0.1s, opacity 0.1s, transform 0.1s;
+    }
+    .star-btn.active, .star-btn:hover { filter: none; opacity: 1; transform: scale(1.15); }
+    /* Related products */
+    .pd-related { margin-top: 3rem; }
+    /* Responsive */
+    @media (max-width: 1024px) {
+      .pd-layout { grid-template-columns: 1fr 1fr; }
+      .pd-buybox { position: static; grid-column: 1 / -1; }
+    }
+    @media (max-width: 640px) {
+      .pd-layout { grid-template-columns: 1fr; }
+      .pd-main-img { font-size: 80px; }
+      .pd-price { font-size: 26px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<header>
+  <div class="header-inner">
+    <a href="index.html" class="logo">
+      <svg width="28" height="28" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:7px;flex-shrink:0;"><defs><linearGradient id="lg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#6366f1"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#lg)"/><path d="M10 20C10 16.7 12.7 14 16 14C18.3 14 19.8 15.5 21 17C22.2 15.5 23.7 14 26 14C29.3 14 32 16.7 32 20C32 23.3 29.3 26 26 26C23.7 26 22.2 24.5 21 23C19.8 24.5 18.3 26 16 26C12.7 26 10 23.3 10 20Z" stroke="white" stroke-width="2.2" fill="none" stroke-linejoin="round"/></svg>Shop<span>finity</span>
+    </a>
+    <div class="search-wrap">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <input class="search-input" type="text" placeholder="Search in Shopfinity" autocomplete="off" />
+    </div>
+    <div class="header-actions">
+      <button class="btn-icon" onclick="window.location.href='index.html?login=merchant'" style="color:var(--muted); font-size:12px; border-style:dashed;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Merchant Portal
+      </button>
+      <button class="btn-icon cart-btn" onclick="openCart()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+        Cart
+        <span class="cart-count" style="display:none">0</span>
+      </button>
+      <button class="btn-icon" onclick="openAuthModal()">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+        <span class="signin-btn">Sign in</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<!-- ===== MAIN ===== -->
+<main>
+  <!-- Breadcrumb -->
+  <div class="breadcrumb" id="pd-breadcrumb">
+    <a href="index.html">Home</a>
+    <span>&rsaquo;</span>
+    <a href="products.html" id="pd-bread-cat">Products</a>
+    <span>&rsaquo;</span>
+    <span id="pd-bread-name">Loading...</span>
+  </div>
+
+  <!-- ===== PRODUCT LAYOUT ===== -->
+  <div class="pd-layout" id="pd-layout" style="display:none">
+
+    <!-- LEFT: Gallery -->
+    <div class="pd-gallery">
+      <!-- Main image -->
+      <div class="pd-main-img" id="pd-main-img" onclick="openLightbox(0)" style="cursor:zoom-in;"></div>
+      <div class="pd-thumbs" id="pd-thumbs"></div>
+    </div>
+
+  <!-- ===== LIGHTBOX ===== -->
+  <div id="pd-lightbox" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:9000;align-items:center;justify-content:center;flex-direction:column;" onclick="closeLightbox()">
+    <button onclick="closeLightbox();event.stopPropagation()" style="position:absolute;top:16px;right:20px;background:none;border:none;color:#fff;font-size:28px;cursor:pointer;line-height:1;z-index:1;">&times;</button>
+    <button id="lb-prev" onclick="lightboxNav(-1);event.stopPropagation()" style="position:absolute;left:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:24px;border-radius:50%;width:44px;height:44px;cursor:pointer;display:none;">&lsaquo;</button>
+    <button id="lb-next" onclick="lightboxNav(1);event.stopPropagation()" style="position:absolute;right:16px;top:50%;transform:translateY(-50%);background:rgba(255,255,255,0.15);border:none;color:#fff;font-size:24px;border-radius:50%;width:44px;height:44px;cursor:pointer;display:none;">&rsaquo;</button>
+    <img id="lb-img" src="" alt="" onclick="event.stopPropagation()" style="max-width:90vw;max-height:85vh;object-fit:contain;border-radius:8px;box-shadow:0 8px 40px rgba(0,0,0,0.5);" />
+    <div id="lb-counter" style="color:rgba(255,255,255,0.6);font-size:13px;margin-top:12px;"></div>
+  </div>
+
+    <!-- MIDDLE: Product Info -->
+    <div class="pd-info">
+      <div class="pd-brand" id="pd-brand"></div>
+      <h1 class="pd-name" id="pd-name"></h1>
+
+      <div class="pd-meta">
+        <span class="pd-stars" id="pd-stars"></span>
+        <a class="pd-review-count" id="pd-review-count" onclick="document.getElementById('pd-reviews-section').scrollIntoView({behavior:'smooth'})"></a>
+      </div>
+
+      <div class="pd-badges" id="pd-badges"></div>
+      <hr class="pd-divider" />
+
+      <div class="pd-price-row">
+        <span class="pd-price" id="pd-price"></span>
+        <span class="pd-price-note" id="pd-price-note"></span>
+      </div>
+
+      <hr class="pd-divider" />
+      <p class="pd-desc" id="pd-desc"></p>
+
+      <div>
+        <div class="pd-section-label">SKU</div>
+        <code style="font-size:12px; color:var(--faint); background:var(--bg); padding:3px 8px; border-radius:4px; border:1px solid var(--border);" id="pd-sku"></code>
+      </div>
+
+      <div>
+        <div class="pd-section-label">Qty</div>
+        <div class="pd-qty-row">
+          <input type="number" class="pd-qty-input" id="pd-qty" value="1" min="1" max="99" />
+          <button class="btn btn-primary" style="width:auto; padding:10px 24px;" onclick="pdAddToCart()">+ Add to cart</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: Buy Box -->
+    <div class="pd-buybox">
+      <div>
+        <div style="font-size:12px; color:var(--muted); margin-bottom:4px;">Price</div>
+        <div class="pd-buybox-price" id="bb-price"></div>
+      </div>
+      <div class="pd-shipping" id="bb-shipping"></div>
+      <div class="pd-stock-row" id="bb-stock"></div>
+      <hr class="pd-divider" />
+      <div>
+        <label style="font-size:12px; font-weight:600; color:var(--text); display:block; margin-bottom:6px;">Quantity</label>
+        <div style="display:flex;align-items:center;gap:0;border:1px solid var(--border);border-radius:var(--radius-sm);overflow:hidden;width:fit-content;">
+          <button onclick="bbChangeQty(-1)" style="width:36px;height:38px;border:none;background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit;color:var(--text);border-right:1px solid var(--border);">-</button>
+          <input type="number" id="bb-qty" value="1" min="1" max="99" style="width:48px;height:38px;border:none;text-align:center;font-size:15px;font-family:inherit;background:var(--surface);color:var(--text);outline:none;" />
+          <button onclick="bbChangeQty(1)" style="width:36px;height:38px;border:none;background:var(--bg);font-size:18px;cursor:pointer;font-family:inherit;color:var(--text);border-left:1px solid var(--border);">+</button>
+        </div>
+      </div>
+      <button class="btn btn-primary" onclick="bbAddToCart()">Add to cart</button>
+      <button class="btn btn-outline" onclick="bbBuyNow()">Buy now</button>
+      <div style="font-size:11px; color:var(--faint); text-align:center; margin-top:4px;">
+        Free shipping on orders over ₱2,000
+      </div>
+    </div>
+  </div>
+
+  <!-- Reviews Section -->
+  <div id="pd-reviews-section" class="pd-reviews-section" style="display:none">
+    <h2 class="pd-reviews-header">Customer reviews</h2>
+
+    <!-- Rating summary -->
+    <div class="pd-rating-summary">
+      <div class="pd-rating-big">
+        <div class="num" id="pd-avg-rating"></div>
+        <div class="stars" id="pd-avg-stars"></div>
+        <div class="total" id="pd-total-reviews"></div>
+      </div>
+      <div class="pd-rating-bars" id="pd-rating-bars"></div>
+    </div>
+
+    <!-- Write a review -->
+    <div class="write-review-box" id="write-review-box" style="display:none"></div>
+
+    <!-- Notice for logged-in users who have received this product -->
+    <div id="review-cta" style="display:none; background:var(--green-light); border:1px solid var(--green); border-radius:var(--radius); padding:1rem 1.25rem; margin-bottom:1.5rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;">
+      <span style="font-size:13px; color:var(--green-dark); font-weight:600;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:middle;margin-right:4px;"><polyline points="20 6 9 17 4 12"/></svg> You've received this product &mdash; share your experience!</span>
+      <a href="orders.html" class="btn btn-primary" style="width:auto; padding:8px 18px; font-size:13px;">Write a review</a>
+    </div>
+
+    <!-- Review list -->
+    <div id="pd-review-list"></div>
+  </div>
+
+  <!-- Related products -->
+  <div class="pd-related" id="pd-related" style="display:none">
+    <div class="section-header">
+      <h2>You might also like</h2>
+      <a href="products.html">See all</a>
+    </div>
+    <div class="product-grid" id="pd-related-grid"></div>
+  </div>
+
+</main>
+
+<!-- ===== FOOTER ===== -->
+<footer>
+  <div class="footer-grid">
+    <div class="footer-col">
+      <div class="footer-brand-logo">
+        <svg width="20" height="20" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg" style="vertical-align:middle;margin-right:7px;flex-shrink:0;"><defs><linearGradient id="lg" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#818cf8"/><stop offset="100%" stop-color="#6366f1"/></linearGradient></defs><rect width="40" height="40" rx="10" fill="url(#lg)"/><path d="M10 20C10 16.7 12.7 14 16 14C18.3 14 19.8 15.5 21 17C22.2 15.5 23.7 14 26 14C29.3 14 32 16.7 32 20C32 23.3 29.3 26 26 26C23.7 26 22.2 24.5 21 23C19.8 24.5 18.3 26 16 26C12.7 26 10 23.3 10 20Z" stroke="white" stroke-width="2.2" fill="none" stroke-linejoin="round"/></svg>Shop<span>finity</span>
+      </div>
+      <p class="footer-desc">A prototype e-commerce store built for testing and review verification browser extensions.</p>
+      <span class="footer-badge">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        v1.0 &mdash; Demo only
+      </span>
+    </div>
+    <div class="footer-col">
+      <h3>Company</h3>
+      <a onclick="openAboutModal()">About us</a>
+      <a onclick="window.location.href='index.html?login=merchant'">Merchant Portal</a>
+    </div>
+    <div class="footer-col">
+      <h3>Support</h3>
+      <a onclick="openContactModal()">support@shopfinity.test</a>
+      <a onclick="openContactModal()">+1 (800) 000-0000</a>
+      <a onclick="openContactModal()">Live chat (demo)</a>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <span>&copy; 2026 Shopfinity &mdash; Demo platform for review verification testing</span>
+  </div>
+</footer>
+
+<!-- ===== CART DRAWER ===== -->
+<div class="cart-overlay" id="cartOverlay"></div>
+<div class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <h2>Your cart</h2>
+    <button class="close-btn" onclick="closeCart()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+  </div>
+  <div class="cart-items" id="cartItems">
+    <div class="cart-empty"><div class="big-emoji"><svg class="inline-icon" viewBox="0 0 24 24" ><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></g></svg></div><p>Your cart is empty</p></div>
+  </div>
+  <div class="cart-footer">
+    <div class="cart-total"><span>Total</span><span id="cartTotal">₱0</span></div>
+    <button class="btn btn-primary" onclick="checkout()">Checkout</button>
+    <button class="btn btn-outline" style="margin-top:8px" onclick="closeCart()">Continue shopping</button>
+  </div>
+</div>
+
+<!-- ===== AUTH MODAL ===== -->
+<div class="modal-overlay" id="authModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAuthModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div id="loginForm">
+      <h2>Sign in</h2><p>Welcome back to Shopfinity</p>
+      <div class="form-group"><label>Email</label><input type="email" id="loginEmail" placeholder="you@example.com" /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="loginPass" placeholder="••••••••" /></div>
+      <button class="btn btn-primary" onclick="doLogin()">Sign in</button>
+      <div class="modal-footer">No account? <a onclick="showRegister()">Create one</a></div>
+    </div>
+    <div id="registerForm" style="display:none">
+      <h2>Create account</h2><p>Join Shopfinity today</p>
+      <div class="form-group"><label>Name</label><input type="text" id="regName" placeholder="Your name" /></div>
+      <div class="form-group"><label>Email</label><input type="email" id="regEmail" placeholder="you@example.com" /></div>
+      <div class="form-group"><label>Password</label><input type="password" id="regPass" placeholder="Choose a password" /></div>
+      <button class="btn btn-primary" onclick="doRegister()">Create account</button>
+      <div class="modal-footer">Already have one? <a onclick="showLogin()">Sign in</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ACCOUNT MODAL ===== -->
+<div class="modal-overlay" id="accountModal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeAccountModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <div class="account-info">
+      <div class="account-avatar" id="accountInitials">AB</div>
+      <div class="account-name" id="accountName">User</div>
+      <div class="account-email" id="accountEmail">user@example.com</div>
+    </div>
+    <div class="account-actions">
+      <button class="btn btn-outline" onclick="openAddressesModal(); closeAccountModal()">
+        <svg class="inline-icon" viewBox="0 0 24 24"><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></g></svg>
+        My addresses
+      </button>
+      <button class="btn btn-outline" onclick="window.location.href='orders.html'; closeAccountModal()">My orders</button>
+      <button class="btn btn-primary" onclick="doSignOut()">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== ADDRESSES MODAL ===== -->
+<div class="modal-overlay" id="addressesModal">
+  <div class="modal addr-modal">
+    <button class="modal-close" onclick="closeAddressesModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+
+    <div class="addr-modal-head">
+      <div class="addr-modal-icon">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <div>
+        <h2 style="font-size:17px;font-weight:700;margin-bottom:2px;">Address Selection</h2>
+        <p style="font-size:13px;color:var(--muted);margin:0;">Choose or add a delivery address.</p>
+      </div>
+    </div>
+
+    <div id="addrModalList" class="addr-list"></div>
+
+    <div class="addr-modal-footer">
+      <button class="addr-add-btn" id="addrAddBtn" onclick="toggleNewAddressForm()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+        Add a new address
+      </button>
+    </div>
+
+    <div class="addr-new-form" id="addrNewForm">
+      <div class="addr-form-section-title">Contact information</div>
+      <div class="addr-field">
+        <label class="addr-label">Full name</label>
+        <input id="anContactName" type="text" class="addr-input" placeholder="Recipient's full name" />
+      </div>
+      <div class="addr-field">
+        <label class="addr-label">Phone number</label>
+        <input id="anContactNumber" type="tel" class="addr-input" placeholder="e.g. 09171234567" />
+      </div>
+
+      <div class="addr-form-section-title" style="margin-top:1.25rem;">Address</div>
+      <div class="addr-field">
+        <label class="addr-label">Full address</label>
+        <textarea id="anAddress" class="addr-textarea" placeholder="Street, Barangay, City, Province, ZIP Code"></textarea>
+      </div>
+
+      <div class="addr-form-section-title" style="margin-top:1.25rem;">Options</div>
+      <div class="addr-field">
+        <label class="addr-label">Label as</label>
+        <div class="addr-label-chips">
+          <button type="button" class="addr-chip" onclick="selectLabelChip(this,'Home')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Home</button>
+          <button type="button" class="addr-chip" onclick="selectLabelChip(this,'Work')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg> Work</button>
+          <button type="button" class="addr-chip" onclick="selectLabelChip(this,'Other')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg> Other</button>
+        </div>
+        <input id="anLabel" type="hidden" value="" />
+      </div>
+
+      <label class="addr-default-row">
+        <span>
+          <span class="addr-default-label">Set as default address</span>
+          <span class="addr-default-sub">Pre-selected at checkout</span>
+        </span>
+        <span class="addr-toggle-wrap">
+          <input type="checkbox" id="anIsDefault" class="addr-toggle-input" />
+          <span class="addr-toggle-track"><span class="addr-toggle-thumb"></span></span>
+        </span>
+      </label>
+
+      <div class="addr-form-actions">
+        <button class="btn btn-primary addr-save-btn" onclick="saveNewAddress()">Save address</button>
+        <button class="btn btn-outline" onclick="toggleNewAddressForm()">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== CHECKOUT MODAL ===== -->
+<div class="modal-overlay" id="checkoutModal">
+  <div class="modal" style="max-width:520px; max-height:90vh; overflow-y:auto;">
+    <button class="modal-close" onclick="closeCheckoutModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h2>Checkout</h2>
+    <p style="color:var(--muted); margin-bottom:1.5rem;">Review your order and choose payment</p>
+    <div style="background:var(--surface); border-radius:10px; padding:1rem; margin-bottom:1.25rem;">
+      <h3 style="font-size:14px; font-weight:600; margin-bottom:0.75rem;">Order summary</h3>
+      <div id="checkoutItems" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+      <div style="border-top:1px solid var(--border); margin-top:0.75rem; padding-top:0.75rem; display:flex; flex-direction:column; gap:0.4rem; font-size:14px;">
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted)">Subtotal</span><span id="checkoutSubtotal">₱0</span></div>
+        <div style="display:flex; justify-content:space-between;"><span style="color:var(--muted)">Shipping</span><span id="checkoutShipping">₱99</span></div>
+        <div style="display:flex; justify-content:space-between; font-weight:700; font-size:15px;"><span>Total</span><span id="checkoutTotal">₱0</span></div>
+      </div>
+    </div>
+    <!-- Delivery details -->
+    <div style="margin-bottom:1rem;">
+      <h3 style="font-size:14px; font-weight:600; margin-bottom:0.75rem;">Delivery details</h3>
+      <div class="form-group" style="margin-bottom:0.75rem;">
+        <label for="checkoutContactName">Contact name</label>
+        <input id="checkoutContactName" type="text" placeholder="Full name of recipient" style="width:100%; height:40px; border:1px solid var(--border); border-radius:8px; padding:0 12px; font-size:14px; font-family:inherit; background:var(--surface); color:inherit; box-sizing:border-box;" />
+      </div>
+      <div class="form-group" style="margin-bottom:0.75rem;">
+        <label for="checkoutContactNumber">Contact number</label>
+        <input id="checkoutContactNumber" type="tel" placeholder="e.g. 09171234567" style="width:100%; height:40px; border:1px solid var(--border); border-radius:8px; padding:0 12px; font-size:14px; font-family:inherit; background:var(--surface); color:inherit; box-sizing:border-box;" />
+      </div>
+      <div class="form-group">
+        <label for="checkoutAddress">Delivery address</label>
+        <textarea id="checkoutAddress" rows="3" placeholder="Street, Barangay, City, Province, ZIP" style="width:100%; border:1px solid var(--border); border-radius:8px; padding:10px 12px; font-size:14px; font-family:inherit; background:var(--surface); color:inherit; resize:vertical; box-sizing:border-box;"></textarea>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Payment method</label>
+      <select id="checkoutPayment" style="width:100%; height:40px; border:1px solid var(--border); border-radius:8px; padding:0 12px; font-size:14px; font-family:inherit; background:var(--surface);">
+        <option value="">Select payment method...</option>
+        <option value="cash_on_delivery">Cash on Delivery</option>
+      </select>
+    </div>
+    <button class="btn btn-primary" style="margin-top:0.5rem" onclick="placeOrder()">Place order</button>
+    <button class="btn btn-outline" style="margin-top:8px" onclick="closeCheckoutModal(); openCart()">Back to cart</button>
+  </div>
+</div>
+
+<!-- ===== ORDER SUCCESS MODAL ===== -->
+<div class="modal-overlay" id="orderSuccessModal">
+  <div class="modal" style="max-width:440px; text-align:center; padding:2rem 1.75rem; border-radius:20px;">
+    <div style="width:72px; height:72px; background:var(--green-light); border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem;">
+      <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    </div>
+    <h2 style="font-size:22px; font-weight:700; margin-bottom:0.35rem;">Order placed!</h2>
+    <p style="color:var(--muted); font-size:14px; margin-bottom:1.5rem;">Thank you for your purchase. We'll get it ready for delivery.</p>
+    <div style="background:var(--bg); border:1px solid var(--border); border-radius:12px; padding:1rem 1.25rem; margin-bottom:1rem; text-align:left;">
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; padding-bottom:0.6rem; border-bottom:1px solid var(--border); margin-bottom:0.6rem;">
+        <span style="color:var(--muted); font-weight:500;">Order number</span>
+        <span id="successOrderNumber" style="font-weight:700; font-family:monospace; font-size:13px; color:var(--text);"></span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:13px; padding-bottom:0.6rem; border-bottom:1px solid var(--border); margin-bottom:0.6rem;">
+        <span style="color:var(--muted); font-weight:500;">Payment</span>
+        <span style="font-weight:600; color:var(--text);">Cash on Delivery</span>
+      </div>
+      <div style="display:flex; justify-content:space-between; align-items:center; font-size:14px;">
+        <span style="font-weight:600;">Amount due on delivery</span>
+        <span id="successOrderTotal" style="font-weight:700; font-size:15px; color:var(--green);"></span>
+      </div>
+    </div>
+    <div id="veraCredentialBanner" style="display:flex; align-items:center; gap:10px; background:#1a1a2e; border-radius:12px; padding:0.85rem 1.1rem; margin-bottom:1rem; text-align:left;">
+      <svg width="18" height="18" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+        <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z" fill="#a78bfa" opacity="0.3" stroke="#a78bfa" stroke-width="6"/>
+        <path d="M50 18 L78 33 L78 67 L50 82 L22 67 L22 33 Z" fill="#a78bfa" opacity="0.4"/>
+        <circle cx="50" cy="44" r="10" fill="#a78bfa"/>
+        <rect x="46" y="52" width="8" height="14" rx="2" fill="#a78bfa"/>
+      </svg>
+      <span style="font-size:13px; font-weight:600; color:#fff;">Purchase credential saved to VERA Vault!</span>
+    </div>
+    <button class="btn btn-primary" style="width:100%; margin-top:0.25rem;" onclick="closeOrderSuccess()">Continue shopping</button>
+    <a href="orders.html" style="display:block; margin-top:0.6rem; font-size:13px; color:var(--green); text-decoration:none; font-weight:500;">View my orders</a>
+  </div>
+</div>
+
+<!-- ===== ORDERS MODAL ===== -->
+<div class="modal-overlay" id="ordersModal">
+  <div class="modal" style="max-width:600px; max-height:80vh; overflow-y:auto;">
+    <button class="modal-close" onclick="document.getElementById('ordersModal').classList.remove('open')">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h2>Your Orders</h2>
+    <div id="ordersList" style="margin-top:1.5rem;"></div>
+  </div>
+</div>
+
+<!-- ===== ABOUT MODAL ===== -->
+<div class="modal-overlay" id="aboutModal">
+  <div class="modal about-modal">
+    <button class="modal-close" onclick="closeAboutModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h2>About Shopfinity</h2>
+    <p>Shopfinity is a fully functional prototype food e-commerce platform designed for testing and demonstrating review verification browser extensions.</p>
+    <p>All products, prices, orders, and user accounts are simulated. No real transactions are processed.</p>
+    <p>Built with plain HTML, CSS, and JavaScript &mdash; no frameworks, no backend.</p>
+    <p style="margin-top:12px; font-size:12px; color:#bbb;">Version 1.0 &mdash; For testing and demo use only</p>
+    <button class="btn btn-primary" style="margin-top:1rem" onclick="closeAboutModal()">Got it</button>
+  </div>
+</div>
+
+<!-- ===== CONTACT MODAL ===== -->
+<div class="modal-overlay" id="contactModal">
+  <div class="modal contact-modal">
+    <button class="modal-close" onclick="closeContactModal()">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6 6 18M6 6l12 12"/></svg>
+    </button>
+    <h2>Contact us</h2>
+    <p>Send us a message and we'll get back to you shortly.</p>
+    <div class="form-group"><label>Name</label><input type="text" id="cName" placeholder="Your name" /></div>
+    <div class="form-group"><label>Email</label><input type="email" id="cEmail" placeholder="you@example.com" /></div>
+    <div class="form-group">
+      <label>Message</label>
+      <textarea id="cMsg" rows="4" style="width:100%; border:1px solid var(--border); border-radius:6px; padding:10px 12px; font-size:14px; font-family:inherit; outline:none; resize:vertical;" placeholder="How can we help?"></textarea>
+    </div>
+    <button class="btn btn-primary" onclick="sendContact()">Send message</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- ===== SCRIPTS ===== -->
+<script src="supabase-config.js"></script>
+<script src="app.js"></script>
+<script>
+/* ===== PRODUCT DETAIL PAGE LOGIC ===== */
+let pdProduct     = null;
+let pdStarRating  = 5;
+let pdPageReviews = [];
+let galleryImages = [];   // module-level so all gallery/lightbox functions can access it
+
+function starsHTML(rating, max = 5) {
+  const filled = `<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="display:inline-block;vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+  const empty  = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;opacity:0.3;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>`;
+  const rounded = Math.round(rating);
+  return filled.repeat(Math.min(rounded, max)) + empty.repeat(Math.max(0, max - rounded));
+}
+
+function stockLabel(stock) {
+  const el = document.getElementById('bb-stock');
+  el.innerHTML = '';
+  const dot = document.createElement('span');
+  dot.className = 'pd-stock-dot';
+  const txt = document.createElement('span');
+  if (stock > 20) {
+    el.className = 'pd-stock-row in';
+    txt.textContent = 'In Stock';
+  } else if (stock > 0) {
+    el.className = 'pd-stock-row low';
+    txt.textContent = `Only ${stock} left`;
+  } else {
+    el.className = 'pd-stock-row out';
+    txt.textContent = 'Out of Stock';
+  }
+  el.appendChild(dot);
+  el.appendChild(txt);
+}
+
+function buildRatingBars(reviews) {
+  const counts = [0, 0, 0, 0, 0]; // index 0 = 1 star
+  reviews.forEach(r => { const i = Math.round(r.rating); if (i >= 1 && i <= 5) counts[i - 1]++; });
+  const total = reviews.length || 1;
+  let html = '';
+  for (let i = 5; i >= 1; i--) {
+    const pct = Math.round((counts[i - 1] / total) * 100);
+    html += `<div class="pd-bar-row">
+      <span class="label">${i} <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor" stroke="none" style="vertical-align:middle;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span>
+      <div class="pd-bar-track"><div class="pd-bar-fill" style="width:${pct}%"></div></div>
+      <span class="pct">${pct}%</span>
+    </div>`;
+  }
+  document.getElementById('pd-rating-bars').innerHTML = html;
+}
+
+function renderReviews(reviews) {
+  const list = document.getElementById('pd-review-list');
+  if (!reviews || reviews.length === 0) {
+    list.innerHTML = '<div class="review-empty">No reviews yet. Be the first to review this product!</div>';
+    return;
+  }
+  list.innerHTML = reviews.map(r => {
+    const date = r.created_at ? new Date(r.created_at).toLocaleDateString('en-PH', { year:'numeric', month:'short', day:'numeric' }) : '';
+    const verifiedPurchase = r.verified_purchase;
+    const veraBadge = (r.id_verification_score >= 80)
+      ? `<span class="pd-badge" style="background:#f3e8ff;color:#7c3aed;border:1px solid #c4b5fd;display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;">
+          <svg width="13" height="13" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+            <path d="M50 5 L90 27.5 L90 72.5 L50 95 L10 72.5 L10 27.5 Z" fill="#7c3aed" opacity="0.15" stroke="#7c3aed" stroke-width="6"/>
+            <path d="M50 18 L78 33 L78 67 L50 82 L22 67 L22 33 Z" fill="#7c3aed" opacity="0.25"/>
+            <circle cx="50" cy="44" r="10" fill="#7c3aed"/>
+            <rect x="46" y="52" width="8" height="14" rx="2" fill="#7c3aed"/>
+          </svg>
+          VERAfied</span>` : '';
+
+    /* Merchant reply block */
+    const replyBlock = r.merchant_reply
+      ? `<div style="margin-top:10px;background:var(--green-light,#e6f7f1);border-left:3px solid var(--green,#1D9E75);border-radius:0 6px 6px 0;padding:10px 14px;">
+           <div style="font-size:12px;font-weight:700;color:var(--green-dark,#0d6e4e);margin-bottom:4px;display:flex;align-items:center;gap:5px;">
+             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+             Seller reply
+             ${r.merchant_reply_at ? `<span style="font-weight:400;color:var(--muted,#888);font-size:11px;margin-left:4px;">&mdash; ${new Date(r.merchant_reply_at).toLocaleDateString('en-PH',{month:'short',day:'numeric',year:'numeric'})}</span>` : ''}
+           </div>
+           <div style="font-size:13px;color:var(--green-dark,#0d6e4e);line-height:1.6;">${r.merchant_reply.replace(/</g,'&lt;')}</div>
+         </div>` : '';
+
+    return `<div class="review-card">
+      <div class="review-card-header">
+        <div>
+          <div class="review-card-author">${r.user_name || 'Anonymous'}</div>
+          <div class="review-card-stars">${starsHTML(r.rating)} <span style="font-size:12px;color:var(--muted);font-weight:400;">${r.rating}/5</span></div>
+        </div>
+        <div class="review-card-date">${date}</div>
+      </div>
+      <div class="review-card-text">${r.text || ''}</div>
+      <div class="review-card-badges">
+        ${veraBadge}
+      </div>
+      ${replyBlock}
+    </div>`;
+  }).join('');
+}
+
+function setStarRating(val) {
+  pdStarRating = val;
+  document.querySelectorAll('.star-btn').forEach(btn => {
+    btn.classList.toggle('active', +btn.dataset.val <= val);
+  });
+}
+
+async function submitPageReview() {
+  const text = document.getElementById('review-text').value.trim();
+  const verified = document.getElementById('verified-purchase').checked;
+  if (!text) { showToast('Please write a review'); return; }
+  if (!currentUser) { openAuthModal(); showToast('Please sign in to leave a review'); return; }
+  if (!pdProduct) return;
+  const ok = await submitReview(pdProduct.id, pdStarRating, text, verified);
+  if (ok) {
+    document.getElementById('review-text').value = '';
+    document.getElementById('verified-purchase').checked = false;
+    setStarRating(5);
+    const fresh = await loadProductReviews(pdProduct.id);
+    pdPageReviews = fresh;
+    renderReviews(fresh);
+    buildRatingBars(fresh);
+    updateRatingSummary(fresh);
+  }
+}
+
+function updateRatingSummary(reviews) {
+  const count = reviews.length;
+  const avg = count ? (reviews.reduce((s, r) => s + r.rating, 0) / count).toFixed(1) : '0.0';
+  document.getElementById('pd-avg-rating').textContent = avg;
+  document.getElementById('pd-avg-stars').innerHTML = count ? starsHTML(Math.round(avg)) : starsHTML(0);
+  document.getElementById('pd-total-reviews').textContent = count + ' review' + (count !== 1 ? 's' : '');
+  document.getElementById('pd-review-count').textContent = count + ' review' + (count !== 1 ? 's' : '');
+}
+
+function pdAddToCart() {
+  if (!pdProduct) return;
+  const qty = parseInt(document.getElementById('pd-qty').value) || 1;
+  addToCart(pdProduct.id, qty);
+}
+
+function bbAddToCart() {
+  if (!pdProduct) return;
+  const qty = parseInt(document.getElementById('bb-qty').value) || 1;
+  addToCart(pdProduct.id, qty);
+}
+
+function bbBuyNow() {
+  if (!pdProduct) return;
+  const qty = parseInt(document.getElementById('bb-qty').value) || 1;
+  if (qty > pdProduct.stock) { showToast(`Only ${pdProduct.stock} in stock`); return; }
+  openBuyNowCheckout(pdProduct.id, qty);
+}
+
+async function openOrdersModal() {
+  if (!currentUser) { showToast('Please sign in'); openAuthModal(); return; }
+  document.getElementById('ordersModal').classList.add('open');
+  document.getElementById('ordersList').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">Loading...</div>';
+  const orders = await loadUserOrders();
+  if (!orders || orders.length === 0) {
+    document.getElementById('ordersList').innerHTML = '<div style="text-align:center;padding:2rem;color:var(--muted)">No orders yet.</div>';
+    return;
+  }
+  document.getElementById('ordersList').innerHTML = orders.map(o => {
+    const date = new Date(o.created_at).toLocaleDateString();
+    return `<div style="border:1px solid var(--border);border-radius:8px;padding:1rem;margin-bottom:1rem;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem;">
+        <strong>${o.order_number || '#' + o.id}</strong>
+        <span style="background:var(--green-light);color:var(--green-dark);padding:4px 8px;border-radius:4px;font-size:12px;font-weight:600;">${(o.order_status||o.status||'pending').toUpperCase()}</span>
+      </div>
+      <div style="font-size:13px;color:var(--muted);">${date}</div>
+      <div style="font-weight:600;font-size:14px;margin-top:0.5rem;">Total: ₱${(o.total||o.total_amount||0).toLocaleString()}</div>
+    </div>`;
+  }).join('');
+}
+
+/* ===== INIT ===== */
+document.addEventListener('DOMContentLoaded', async () => {
+  loadSession();
+  updateCartUI();
+  updateAccountUI();
+
+  // Close overlays on backdrop click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => { if (e.target === overlay) overlay.classList.remove('open'); });
+  });
+  document.getElementById('cartOverlay')?.addEventListener('click', closeCart);
+  document.querySelectorAll('.search-input').forEach(el => el.addEventListener('keydown', handleSearch));
+  document.getElementById('loginPass')?.addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+  document.getElementById('regPass')?.addEventListener('keydown',  e => { if (e.key === 'Enter') doRegister(); });
+
+  if (currentUser) { loadCartFromDB(); }
+
+  // Set default star rating
+  setStarRating(5);
+
+  // Read product UUID from URL
+  const params = new URLSearchParams(window.location.search);
+  const rawId  = params.get('id');
+  if (!rawId) { window.location.href = 'products.html'; return; }
+
+  // Load ALL products from DB
+  await loadAllProducts();
+
+  const product = PRODUCTS.find(p => p.id === rawId);
+  if (!product) { window.location.href = 'products.html'; return; }
+  pdProduct = product;
+
+  // Populate page title
+  document.title = `Shopfinity &mdash; ${product.name}`;
+
+  // Breadcrumb
+  document.getElementById('pd-bread-cat').textContent = product.cat;
+  document.getElementById('pd-bread-cat').href = `products.html?cat=${encodeURIComponent(product.cat)}`;
+  document.getElementById('pd-bread-name').textContent = product.name;
+
+  // Gallery � real images if available, emoji fallback
+  const imgs = (product.image_urls || []).filter(Boolean);
+  galleryImages = imgs;   // assign to module-level var so lightbox/thumbs can access it
+
+  if (imgs.length > 0) {
+    // Main image � show first image
+    const mainEl = document.getElementById('pd-main-img');
+    mainEl.innerHTML = `<img src="${imgs[0]}" alt="${product.name}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" />`;
+    mainEl.style.fontSize = '0';
+    mainEl.dataset.idx = '0';
+
+    // Thumbnails � clicking sets main image AND updates lightbox index
+    document.getElementById('pd-thumbs').innerHTML = imgs.map((url, i) =>
+      `<div class="pd-thumb ${i===0?'active':''}" onclick="selectThumbImg(this,${i})" style="overflow:hidden;">
+         <img src="${url}" alt="Photo ${i+1}" style="width:100%;height:100%;object-fit:cover;" loading="lazy" />
+       </div>`
+    ).join('');
+  } else {
+    // Emoji fallback � disable lightbox click
+    const mainEl = document.getElementById('pd-main-img');
+    mainEl.innerHTML = `<img src="https://placehold.co/400x400/e0e0e0/888888.png?text=No+Image" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" />`; mainEl.onclick = null;
+    mainEl.style.cursor = 'default';
+    mainEl.onclick      = null;
+    document.getElementById('pd-thumbs').innerHTML = '';
+    galleryImages = [];
+  }
+
+  // Info panel
+  document.getElementById('pd-brand').textContent = product.cat;
+  document.getElementById('pd-name').textContent = product.name;
+  document.getElementById('pd-stars').innerHTML = starsHTML(product.rating) + ' ' + product.rating;
+  document.getElementById('pd-sku').textContent = product.sku;
+  document.getElementById('pd-desc').textContent = product.desc;
+  document.getElementById('pd-price').textContent = '₱' + product.price.toLocaleString();
+  const priceNote = document.getElementById('pd-price-note');
+  if (product.stock > 0) {
+    priceNote.textContent = `${product.stock} in stock`;
+    priceNote.style.color = '#16a34a';
+    priceNote.style.fontWeight = '600';
+  } else {
+    priceNote.textContent = 'Out of stock';
+    priceNote.style.color = '#e53935';
+    priceNote.style.fontWeight = '600';
+  }
+
+  // Badges
+  const badgeContainer = document.getElementById('pd-badges');
+  if (product.rating >= 4.7) badgeContainer.innerHTML += '<span class="pd-badge green"><svg class="inline-icon" viewBox="0 0 24 24" ><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon></g></svg> Top Rated</span>';
+  if (product.reviews > 100) badgeContainer.innerHTML += '<span class="pd-badge amber"><svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:inline-block;vertical-align:middle;"><path d="M12 2c0 6-6 8-6 14a6 6 0 0 0 12 0c0-6-6-8-6-14z"/><path d="M12 12c0 3-2 4-2 7a2 2 0 0 0 4 0c0-3-2-4-2-7z"/></svg> Bestseller</span>';
+
+  // Buy box
+  document.getElementById('bb-price').textContent = '₱' + product.price.toLocaleString();
+  const subtotal = product.price;
+  document.getElementById('bb-shipping').innerHTML = subtotal >= 2000
+    ? '<span>FREE shipping</span>'
+    : `Standard shipping: <span>₱99</span> <br><span style="font-size:11px">Free on orders over ₱2,000</span>`;
+  stockLabel(product.stock);
+
+  // Set max on both qty inputs to prevent typing over stock
+  document.getElementById('bb-qty').max  = product.stock;
+  document.getElementById('pd-qty').max  = product.stock;
+
+  // Disable add-to-cart if out of stock
+  if (product.stock === 0) {
+    document.querySelectorAll('.btn-primary[onclick*="AddToCart"], .btn-primary[onclick*="addToCart"]').forEach(btn => {
+      btn.disabled = true;
+      btn.textContent = 'Out of stock';
+    });
+  }
+
+  // Show layout
+  document.getElementById('pd-layout').style.display = 'grid';
+  document.getElementById('pd-reviews-section').style.display = 'block';
+
+  // Run reviews fetch + received-check + existing-review-check all in parallel
+  const [reviews, received, existingReview] = await Promise.all([
+    loadProductReviews(product.id),
+    currentUser ? hasReceivedProduct(product.id) : Promise.resolve(false),
+    currentUser ? db(`/reviews?product_id=eq.${product.id}&user_id=eq.${currentUser.id}&limit=1`).catch(() => null) : Promise.resolve(null),
+  ]);
+
+  pdPageReviews = reviews || [];
+  renderReviews(pdPageReviews);
+  buildRatingBars(pdPageReviews);
+  updateRatingSummary(pdPageReviews);
+
+  // Show "Write a review" CTA only if received AND not yet reviewed
+  if (currentUser && received) {
+    const alreadyReviewed = existingReview && existingReview.length > 0;
+    if (!alreadyReviewed) {
+      document.getElementById('review-cta').style.display = 'flex';
+    }
+  }
+
+  // Related products (same category, different id)
+  const related = PRODUCTS.filter(p => p.cat === product.cat && p.id !== product.id).slice(0, 4);
+  if (related.length > 0) {
+    document.getElementById('pd-related-grid').innerHTML = related.map(makeProductCard).join('');
+    document.getElementById('pd-related').style.display = 'block';
+  }
+});
+
+function selectThumbImg(el, idx) {
+  document.querySelectorAll('.pd-thumb').forEach(t => t.classList.remove('active'));
+  el.classList.add('active');
+  const mainEl = document.getElementById('pd-main-img');
+  mainEl.innerHTML = `<img src="${galleryImages[idx]}" alt="Photo ${idx+1}" style="width:100%;height:100%;object-fit:cover;border-radius:var(--radius-sm);" />`;
+  mainEl.dataset.idx = String(idx);
+}
+
+/* -- Buy box quantity stepper -- */
+function bbChangeQty(delta) {
+  const input   = document.getElementById('bb-qty');
+  const current = parseInt(input.value) || 1;
+  const stock   = pdProduct ? pdProduct.stock : 99;
+  const next    = Math.max(1, Math.min(stock, current + delta));
+  if (current + delta > stock) showToast(`Only ${stock} in stock`);
+  input.value   = next;
+}
+
+function pdAddToCart() {
+  if (!pdProduct) return;
+  const qty = parseInt(document.getElementById('pd-qty').value) || 1;
+  addToCart(pdProduct.id, qty);
+}
+
+function bbAddToCart() {
+  if (!pdProduct) return;
+  const qty = parseInt(document.getElementById('bb-qty').value) || 1;
+  addToCart(pdProduct.id, qty);
+}
+
+function bbBuyNow() {
+  if (!pdProduct) return;
+  const qty = parseInt(document.getElementById('bb-qty').value) || 1;
+  // Buy Now checks stock and opens checkout for this product only � cart is untouched
+  if (qty > pdProduct.stock) {
+    showToast(`Only ${pdProduct.stock} in stock`);
+    return;
+  }
+  openBuyNowCheckout(pdProduct.id, qty);
+}
+
+// Lightbox
+let lbIndex = 0;
+
+function openLightbox(startIdx) {
+  if (!galleryImages || galleryImages.length === 0) return;
+  // Use passed index or fall back to currently displayed image
+  lbIndex = (typeof startIdx === 'number') ? startIdx
+    : parseInt(document.getElementById('pd-main-img').dataset.idx || '0');
+  showLightboxImage(lbIndex);
+  const lb = document.getElementById('pd-lightbox');
+  lb.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+  document.getElementById('lb-prev').style.display = galleryImages.length > 1 ? '' : 'none';
+  document.getElementById('lb-next').style.display = galleryImages.length > 1 ? '' : 'none';
+}
+
+function closeLightbox() {
+  document.getElementById('pd-lightbox').style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function lightboxNav(dir) {
+  lbIndex = (lbIndex + dir + galleryImages.length) % galleryImages.length;
+  showLightboxImage(lbIndex);
+}
+
+function showLightboxImage(idx) {
+  document.getElementById('lb-img').src = galleryImages[idx];
+  document.getElementById('lb-counter').textContent =
+    galleryImages.length > 1 ? `${idx + 1} / ${galleryImages.length}` : '';
+}
+
+// Keyboard navigation for lightbox
+document.addEventListener('keydown', e => {
+  const lb = document.getElementById('pd-lightbox');
+  if (!lb || lb.style.display === 'none') return;
+  if (e.key === 'Escape')     closeLightbox();
+  if (e.key === 'ArrowLeft')  lightboxNav(-1);
+  if (e.key === 'ArrowRight') lightboxNav(1);
+});
+</script>
+</body>
+</html>
