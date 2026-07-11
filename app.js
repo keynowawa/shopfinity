@@ -1115,7 +1115,7 @@ async function placeOrder() {
         const credRes = await fetch('https://vera-api-buru.onrender.com/api/credentials/issue', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ storeID: product.store_name, itemSKU: product.sku })
+          body: JSON.stringify({ storeID: product.store_name, itemSKU: product.sku, invoiceID: orderNumber })
         });
         const credData = await credRes.json();
         console.log("[VERA] Backend response:", credData.success ? "SUCCESS" : "FAILED", credData);
