@@ -713,8 +713,6 @@ async function submitReview(productId, rating, text, verifiedPurchase = false, u
      showToast('Product SKU not found'); return false;
   }
 
-  showToast('Generating secure Zero-Knowledge Proof...');
-  
   try {
     // 1. Get challenge nonce from VERA backend
     const challengeRes = await fetch('http://localhost:3001/api/verify/challenge');
@@ -1145,11 +1143,6 @@ async function placeOrder() {
             publicKey: credData.publicKey
           }, "*");
           const stored = await storePromise;
-          if (stored) {
-            // Show the VERA banner inside the order success modal instead of a toast
-            const banner = document.getElementById('veraCredentialBanner');
-            if (banner) banner.style.display = 'block';
-          }
         }
       } catch (err) {
         console.error("[VERA] Failed to issue credential:", err);
