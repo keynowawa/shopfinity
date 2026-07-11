@@ -1028,11 +1028,129 @@ table.data-table {
   .settings-grid { grid-template-columns: 1fr; }
 }
 
-@media (max-width: 760px) {
-  .sidebar { transform: translateX(-100%); }
-  .main-wrap { margin-left: 0; }
-  .topbar-search { display: none; }
-  .stat-grid { grid-template-columns: 1fr; }
-  .form-row-2 { grid-template-columns: 1fr; }
-  .id-field-row { grid-template-columns: 1fr; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  /* GLOBAL APP LAYOUT */
+  .app-layout {
+    flex-direction: column;
+    height: auto;
+    min-height: 100vh;
+    overflow-y: visible;
+  }
+  
+  /* BOTTOM NAVIGATION BAR (replaces sidebar) */
+  .sidebar {
+    width: 100%;
+    height: auto;
+    flex-direction: row;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+    padding: 0.5rem;
+    border-right: none;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    justify-content: space-around;
+    align-items: center;
+    box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+  }
+  .sidebar-brand {
+    display: none; /* Hide logo to save space */
+  }
+  .sidebar-nav {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    justify-content: space-around;
+    gap: 0;
+    margin: 0;
+  }
+  .nav-section-label {
+    display: none; /* Hide labels like "Overview" and "Store" */
+  }
+  .nav-item {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 8px;
+    font-size: 10px;
+    gap: 4px;
+    background: transparent !important;
+  }
+  .nav-item svg {
+    margin: 0;
+    width: 20px;
+    height: 20px;
+  }
+  .nav-badge {
+    position: absolute;
+    top: 4px;
+    right: 50%;
+    transform: translateX(15px);
+  }
+
+  /* MAIN DASHBOARD CONTENT AREA */
+  .main-wrap {
+    margin-left: 0;
+    margin-bottom: 80px; /* Space for bottom nav */
+    height: auto;
+    overflow-y: visible;
+  }
+  .dash-header {
+    padding: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  .topbar-actions {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .topbar-search {
+    display: none; /* Hide search bar on mobile to save space */
+  }
+  .dash-tab-content {
+    padding: 1rem;
+  }
+
+  /* METRICS & GRIDS */
+  .stat-grid {
+    grid-template-columns: 1fr 1fr; /* 2 columns instead of 4 */
+    gap: 10px;
+  }
+  .dash-grid {
+    grid-template-columns: 1fr;
+  }
+  .settings-grid {
+    grid-template-columns: 1fr;
+  }
+  .form-row-2 {
+    grid-template-columns: 1fr;
+  }
+  .id-field-row {
+    grid-template-columns: 1fr;
+  }
+
+  /* TABLES & LISTS */
+  .table-wrap {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    border-radius: 8px;
+  }
+  table {
+    min-width: 600px; /* Force table width so it scrolls */
+  }
+
+  /* MODALS */
+  .modal-content {
+    width: 95%;
+    margin: 1rem;
+    max-height: 90vh;
+    padding: 1.5rem 1rem;
+  }
+  .profile-card {
+    padding: 1.25rem;
+  }
 }

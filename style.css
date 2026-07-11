@@ -1696,95 +1696,93 @@ footer {
     border-radius: 12px;
   }
 
-  /* MERCHANT DASHBOARD LAYOUT */
-  .app-layout {
-    flex-direction: column;
+  .modal-content {
+    width: 95%;
+    margin: 1rem;
+    max-height: 90vh;
+    padding: 1.5rem 1rem;
   }
-  
-  /* Change Sidebar to Bottom Navigation */
-  .sidebar {
-    width: 100%;
-    height: auto;
-    flex-direction: row;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    z-index: 1000;
-    padding: 0.5rem;
-    border-right: none;
-    border-top: 1px solid var(--border);
-    background: var(--surface);
-    justify-content: space-around;
-    align-items: center;
-  }
-  .sidebar-brand {
-    display: none; /* Hide logo on bottom nav to save space */
-  }
-  .sidebar-nav {
-    display: flex;
-    flex-direction: row;
-    width: 100%;
-    justify-content: space-around;
-    gap: 0;
-    margin: 0;
-  }
-  .nav-section-label {
-    display: none; /* Hide labels like "Overview" and "Store" */
-  }
-  .nav-item {
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    padding: 8px;
-    font-size: 10px;
-    gap: 4px;
-    background: transparent !important;
-  }
-  .nav-item svg {
-    margin: 0;
-    width: 20px;
-    height: 20px;
-  }
-  .nav-badge {
-    position: absolute;
-    top: 4px;
-    right: 50%;
-    transform: translateX(15px);
-  }
-
-  /* Adjust Main Dashboard Content Area */
-  .main-content {
-    margin-bottom: 70px; /* Space for bottom nav */
-  }
-  .dash-header {
-    padding: 1rem;
-    flex-direction: column;
-    align-items: flex-start;
+  .form-grid {
+    grid-template-columns: 1fr;
     gap: 1rem;
   }
-  .header-actions {
-    width: 100%;
-    justify-content: space-between;
+  .settings-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
-  .dash-tab-content {
+  .profile-card {
+    padding: 1.25rem;
+  }
+}
+
+/* ============================================================
+   MOBILE RESPONSIVENESS OVERHAUL
+   ============================================================ */
+@media (max-width: 768px) {
+  /* GLOBAL LAYOUTS */
+  .container {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  /* STOREFRONT NAVBAR */
+  .header-inner {
+    flex-wrap: wrap;
+    padding: 0.75rem 1rem;
+    gap: 0.75rem;
+  }
+  .search-wrap {
+    order: 3;
+    width: 100%;
+    margin-left: 0;
+    margin-top: 5px;
+  }
+  .header-actions {
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+  .btn-icon {
+    padding: 0.35rem 0.5rem;
+    font-size: 11px !important;
+  }
+  
+  /* STOREFRONT HERO */
+  .hero-content {
+    padding: 3rem 1rem 2rem;
+  }
+  .hero-content h1 {
+    font-size: 32px;
+  }
+
+  /* STOREFRONT PRODUCT GRID */
+  .content-layout {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  .filter-panel {
+    position: static;
+    margin-bottom: 1rem;
     padding: 1rem;
   }
-  .dash-metrics {
-    grid-template-columns: 1fr 1fr; /* 2 columns instead of 4 */
+  .product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 10px;
   }
-
-  /* TABLES & LISTS */
-  .table-wrap {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    border-radius: 8px;
+  
+  /* STOREFRONT CART & MODALS */
+  .cart-sidebar {
+    width: 100%;
+    right: -100%;
   }
-  table {
-    min-width: 600px; /* Force table width so it scrolls instead of squishing */
+  .cart-sidebar.open {
+    right: 0;
+  }
+  .addr-modal-content {
+    width: 95%;
+    margin: 20px auto;
+    border-radius: 12px;
   }
 
-  /* MODALS (Settings, Verify, Add Product) */
   .modal-content {
     width: 95%;
     margin: 1rem;
