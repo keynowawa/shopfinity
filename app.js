@@ -715,7 +715,7 @@ async function submitReview(productId, rating, text, verifiedPurchase = false, u
 
   try {
     // 1. Get challenge nonce from VERA backend
-    const challengeRes = await fetch('http://localhost:3001/api/verify/challenge');
+    const challengeRes = await fetch('https://vera-api-buru.onrender.com/api/verify/challenge');
     const { nonce } = await challengeRes.json();
     
     // 2. Ask VERA extension for ZK-proof
@@ -735,7 +735,7 @@ async function submitReview(productId, rating, text, verifiedPurchase = false, u
         }
         
         // 3. Submit ZK-proof to VERA API for verification
-        const submitRes = await fetch('http://localhost:3001/api/verify/submit', {
+        const submitRes = await fetch('https://vera-api-buru.onrender.com/api/verify/submit', {
            method: 'POST',
            headers: { 'Content-Type': 'application/json' },
            body: JSON.stringify({
@@ -1100,7 +1100,7 @@ async function placeOrder() {
     if (product && product.sku) {
       try {
         console.log("[VERA] 🔑 Requesting credential from backend for SKU:", product.sku);
-        const credRes = await fetch('http://localhost:3001/api/credentials/issue', {
+        const credRes = await fetch('https://vera-api-buru.onrender.com/api/credentials/issue', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ storeID: product.store_name, itemSKU: product.sku })
