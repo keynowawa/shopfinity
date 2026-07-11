@@ -89,7 +89,7 @@ async function loadAllProducts() {
     const { url, key } = getConfig();
     // Fetch ONLY active products server-side (no full table scan) + reviews in parallel
     const [productsRes, allReviews] = await Promise.all([
-      fetch(`${url}/rest/v1/products?status=eq.Active&order=created_at.desc`, {
+      fetch(`${url}/rest/v1/products?select=*,merchants(store_name)&status=eq.Active&order=created_at.desc`, {
         headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' }
       }),
       db('/reviews?select=product_id,rating')
@@ -132,6 +132,7 @@ function normaliseProduct(p) {
     image_urls: Array.isArray(p.image_urls) ? p.image_urls.filter(Boolean) : [],
     desc:       p.description || '',
     sku:        p.sku   || '',
+    store_name: p.merchants?.store_name || 'ShopFresh',
     rating:     0,
     reviews:    0,
   };
@@ -778,7 +779,7 @@ async function submitReview(productId, rating, text, verifiedPurchase = false, u
       };
       
       window.addEventListener("message", listener);
-      window.postMessage({ source: "VERA_WIDGET", type: "GENERATE_PROOF", storeID: "ShopFresh-Demo", itemSKU: p.sku, nonce: nonce }, "*");
+      window.postMessage({ source: "VERA_WIDGET", type: "GENERATE_PROOF", storeID: p.store_name, itemSKU: p.sku, nonce: nonce }, "*");
       
       // Timeout after 10s
       setTimeout(() => {
@@ -1100,7 +1101,7 @@ async function placeOrder() {
         const credRes = await fetch('http://localhost:3001/api/credentials/issue', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ storeID: "ShopFresh-Demo", itemSKU: product.sku })
+          body: JSON.stringify({ storeID: product.store_name, itemSKU: product.sku })
         });
         const credData = await credRes.json();
         console.log("[VERA] Backend response:", credData.success ? "SUCCESS" : "FAILED", credData);
