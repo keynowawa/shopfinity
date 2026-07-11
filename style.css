@@ -1730,6 +1730,7 @@ footer {
     flex-wrap: wrap;
     padding: 0.75rem 1rem;
     gap: 0.75rem;
+    height: auto; /* Fix fixed height causing overlap */
   }
   .search-wrap {
     order: 3;
@@ -1778,16 +1779,18 @@ footer {
     right: 0;
   }
   .addr-modal-content {
-    width: 95%;
-    margin: 20px auto;
+    width: calc(100% - 2rem);
+    margin: 1rem auto;
     border-radius: 12px;
   }
 
-  .modal-content {
-    width: 95%;
-    margin: 1rem;
+  .modal {
+    width: calc(100% - 2rem) !important; /* Force override inline widths */
+    max-width: none !important;
+    margin: 1rem auto;
     max-height: 90vh;
-    padding: 1.5rem 1rem;
+    padding: 1.5rem 1rem !important;
+    box-sizing: border-box;
   }
   .form-grid {
     grid-template-columns: 1fr;
