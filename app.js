@@ -1114,7 +1114,10 @@ async function placeOrder() {
         console.log("[VERA] 🔑 Requesting credential from backend for SKU:", product.sku);
         const credRes = await fetch('https://vera-api-buru.onrender.com/api/credentials/issue', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer vera-demo-key-2026'
+          },
           body: JSON.stringify({ storeID: product.store_name, itemSKU: product.sku, invoiceID: orderNumber })
         });
         const credData = await credRes.json();
