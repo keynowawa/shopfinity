@@ -642,6 +642,7 @@ table.data-table {
 .badge.red { background: var(--red-light); color: var(--red); }
 .badge.blue { background: var(--blue-light); color: var(--blue); }
 .badge.gray { background: var(--bg); color: var(--muted); }
+.badge.teal { background: #e0f2f1; color: #00796b; }
 
 .row-actions { display: flex; align-items: center; gap: 6px; }
 

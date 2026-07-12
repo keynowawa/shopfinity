@@ -43,7 +43,7 @@
     .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; }
     .pill-pending   { background:#FEF3E2; color:#97650b; }
     .pill-shipped   { background:#e3f0ff; color:#1565c0; }
-    .pill-delivered { background:#e8f5e9; color:#2e7d32; }
+    .pill-delivered { background:#e0f2f1; color:#00796b; }
     .pill-received  { background:var(--green-light); color:var(--green-dark); }
     .pill-cancelled { background:#ffeaea; color:#c0392b; }
     .pill-refunded  { background:#f3f4f6; color:#4b5563; }
@@ -155,6 +155,7 @@
       <button class="order-tab" onclick="switchTab('active',this)">Active <span class="tab-count" id="cnt-active">0</span></button>
       <button class="order-tab" onclick="switchTab('to-review',this)">To review <span class="tab-count" id="cnt-review">0</span></button>
       <button class="order-tab" onclick="switchTab('reviewed',this)">Reviewed <span class="tab-count" id="cnt-reviewed">0</span></button>
+      <button class="order-tab" onclick="switchTab('refunds',this)">Refunds <span class="tab-count" id="cnt-refunds">0</span></button>
     </div>
 
     <div id="ordersContainer">
@@ -547,6 +548,7 @@ function updateTabCounts(orders, reviewed) {
     o.order_status === 'received' &&
     (o.items || []).some(i => !isReviewed(i.product_id, o.id))
   );
+  const refunds = orders.filter(o => o.payment_status === 'refunded');
   document.getElementById('cnt-all').textContent      = orders.length;
   document.getElementById('cnt-active').textContent   = active.length;
   document.getElementById('cnt-review').textContent   = toReview.reduce(
@@ -554,6 +556,8 @@ function updateTabCounts(orders, reviewed) {
   );
   const reviewedEl = document.getElementById('cnt-reviewed');
   if (reviewedEl) reviewedEl.textContent = userReviews.length;
+  const refundsEl = document.getElementById('cnt-refunds');
+  if (refundsEl) refundsEl.textContent = refunds.length;
 }
 
 /* -- Filter and render for the active tab -- */
@@ -624,12 +628,14 @@ function renderTabContent() {
 
   let list;
   if (activeTab === 'active') {
-    list = allOrders.filter(o => !['received','cancelled'].includes(o.order_status));
+    list = allOrders.filter(o => !['received','cancelled'].includes(o.order_status) && o.payment_status !== 'refunded');
   } else if (activeTab === 'to-review') {
     list = allOrders.filter(o =>
       o.order_status === 'received' &&
-      (o.items || []).some(i => !isReviewed(i.product_id, o.id))
+      (o.items || []).some(i => !isReviewed(i.product_id, o.id)) && o.payment_status !== 'refunded'
     );
+  } else if (activeTab === 'refunds') {
+    list = allOrders.filter(o => o.payment_status === 'refunded');
   } else {
     list = allOrders;
   }
@@ -639,6 +645,7 @@ function renderTabContent() {
       'all':       ['<svg class="inline-icon" viewBox="0 0 24 24" ><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"></path><line x1="3" y1="6" x2="21" y2="6"></line><path d="M16 10a4 4 0 0 1-8 0"></path></g></svg>', 'No orders yet',           'When you place an order it will show up here.', true],
       'active':    ['<svg class="inline-icon" viewBox="0 0 24 24" ><g fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></g></svg>', 'No active orders',         'All your parcels have been delivered!',         false],
       'to-review': ['<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>', 'Nothing to review', 'Products you\'ve received will appear here once delivered.', false],
+      'refunds':   ['<svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>', 'No refunds yet', 'Your refund requests and their statuses will appear here.', false],
     };
     const [emoji, title, sub, showBtn] = msgs[activeTab] || msgs['all'];
     container.innerHTML = `<div class="empty-orders">
@@ -745,7 +752,7 @@ function buildOrderCard(order) {
         <div class="order-date">${date}</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span class="status-pill pill-${status}">${status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
+        <span class="status-pill pill-${status}">${status === 'delivered' ? 'Out for Delivery' : status === 'received' ? 'Delivered' : status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
         <div class="order-total">₱${total.toLocaleString()}</div>
       </div>
     </div>
