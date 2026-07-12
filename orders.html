@@ -46,6 +46,7 @@
     .pill-delivered { background:#e8f5e9; color:#2e7d32; }
     .pill-received  { background:var(--green-light); color:var(--green-dark); }
     .pill-cancelled { background:#ffeaea; color:#c0392b; }
+    .pill-refunded  { background:#f3f4f6; color:#4b5563; }
 
     /* Pipeline */
     .status-pipeline { display:flex; align-items:flex-start; padding:1.25rem 1.5rem 0.75rem; overflow-x:auto; gap:0; }
@@ -660,8 +661,9 @@ function buildOrderCard(order) {
   const total = Number(order.total || 0);
 
   /* Pipeline */
-  const pipelineHTML = isCancelled
-    ? `<div class="status-pipeline"><div class="pipeline-step cancelled"><div class="step-dot"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></div><div class="step-label">Cancelled</div></div></div>`
+  const isTerminated = status === 'cancelled' || status === 'refunded';
+  const pipelineHTML = isTerminated
+    ? ``
     : `<div class="status-pipeline">${PIPELINE.map((step,idx) => {
         const cls = idx < currentIdx ? 'done' : idx === currentIdx ? 'active' : '';
         return `<div class="pipeline-step ${cls}">
