@@ -1227,9 +1227,9 @@
                          Cancel
                        </button>`;
       } else if (s === 'received') {
-        actionsHtml = `<span style="color:#6366f1; font-size:12px; font-weight:600; background:#eef2ff; padding:3px 10px; border-radius:20px;">Delivered</span>`;
+        actionsHtml = `<span style="color:#2e7d32; font-size:12px; font-weight:600; background:#e8f5e9; padding:3px 10px; border-radius:20px;">Delivered</span>`;
       } else if (s === 'delivered') {
-        actionsHtml = `<span style="color:var(--green); font-size:12px; font-weight:600; background:var(--green-light); padding:3px 10px; border-radius:20px;">Out for Delivery</span>`;
+        actionsHtml = `<span style="color:#00796b; font-size:12px; font-weight:600; background:#e0f2f1; padding:3px 10px; border-radius:20px;">Out for Delivery</span>`;
       } else if (s === 'shipped') {
         actionsHtml = `<button class="btn btn-outline btn-sm" onclick="updateOrderStatus('${o.id}', 'delivered')">Out for Delivery</button>`;
       } else if (s === 'refund_pending') {

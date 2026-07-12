@@ -637,7 +637,7 @@ table.data-table {
   background: currentColor;
 }
 
-.badge.green { background: var(--green-light); color: var(--green-dark); }
+.badge.green { background: #e8f5e9; color: #2e7d32; }
 .badge.amber { background: var(--amber-light); color: #97650b; }
 .badge.red { background: var(--red-light); color: var(--red); }
 .badge.blue { background: var(--blue-light); color: var(--blue); }
