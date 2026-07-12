@@ -1220,11 +1220,11 @@
                          Cancel
                        </button>`;
       } else if (s === 'received') {
-        actionsHtml = `<span style="color:#6366f1; font-size:12px; font-weight:600; background:#eef2ff; padding:3px 10px; border-radius:20px;">Received</span>`;
+        actionsHtml = `<span style="color:#6366f1; font-size:12px; font-weight:600; background:#eef2ff; padding:3px 10px; border-radius:20px;">Delivered</span>`;
       } else if (s === 'delivered') {
-        actionsHtml = `<span style="color:var(--green); font-size:12px; font-weight:600; background:var(--green-light); padding:3px 10px; border-radius:20px;">Delivered</span>`;
+        actionsHtml = `<span style="color:var(--green); font-size:12px; font-weight:600; background:var(--green-light); padding:3px 10px; border-radius:20px;">Out for Delivery</span>`;
       } else if (s === 'shipped') {
-        actionsHtml = `<button class="btn btn-outline btn-sm" onclick="updateOrderStatus('${o.id}', 'delivered')">Delivered</button>`;
+        actionsHtml = `<button class="btn btn-outline btn-sm" onclick="updateOrderStatus('${o.id}', 'delivered')">Out for Delivery</button>`;
       } else if (s === 'refund_pending') {
         actionsHtml = `<button class="btn btn-outline btn-sm" style="color:var(--green);border-color:var(--green)" onclick="updateOrderStatus('${o.id}', 'cancelled')">
                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:text-bottom"><polyline points="20 6 9 17 4 12"/></svg> Approve Refund
@@ -1239,7 +1239,7 @@
         <td>${date}</td>
         <td style="font-weight:600">₱${total.toLocaleString()}</td>
         <td><span class="badge gray">${payMethod}</span></td>
-        <td><span class="badge ${badgeClass}">${status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span></td>
+        <td><span class="badge ${badgeClass}">${status === 'delivered' ? 'Out for Delivery' : status === 'received' ? 'Delivered' : status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span></td>
         <td><div class="row-actions" style="justify-content:flex-end; gap:8px">
           ${actionsHtml}
         </div></td>
@@ -1386,7 +1386,7 @@
         <td>${o.order_number || '#' + o.id.slice(0,8).toUpperCase()}</td>
         <td style="color:var(--muted);font-size:12px;">${o.user_id ? o.user_id.slice(0,8) + '…' : '—'}</td>
         <td>₱${total.toLocaleString()}</td>
-        <td><span class="badge ${badgeClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+        <td><span class="badge ${badgeClass}">${status === 'delivered' ? 'Out for Delivery' : status === 'received' ? 'Delivered' : status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span></td>
       </tr>`;
     }).join('');
   }
