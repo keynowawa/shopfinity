@@ -80,6 +80,10 @@
     .btn-review { display:inline-flex; align-items:center; gap:5px; background:var(--green-light); color:var(--green-dark); border:1px solid var(--green); border-radius:var(--radius-sm); padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:opacity 0.15s; white-space:nowrap; }
     .btn-review:hover { opacity:0.82; }
     .btn-reviewed { display:inline-flex; align-items:center; gap:5px; background:var(--bg); color:var(--muted); border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 14px; font-size:12px; font-weight:600; cursor:default; font-family:inherit; }
+    .btn-cancel { display:inline-flex; align-items:center; gap:5px; background:var(--bg); color:#c0392b; border:1px solid #ffcdd2; border-radius:var(--radius-sm); padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.15s; white-space:nowrap; }
+    .btn-cancel:hover { background:#ffeaea; border-color:#e53935; }
+    .btn-refund { display:inline-flex; align-items:center; gap:5px; background:var(--bg); color:var(--text); border:1px solid var(--border); border-radius:var(--radius-sm); padding:7px 14px; font-size:12px; font-weight:600; cursor:pointer; font-family:inherit; transition:all 0.15s; white-space:nowrap; }
+    .btn-refund:hover { background:var(--surface); border-color:#999; }
 
     /* Order footer */
     .order-card-foot { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:0.75rem; padding:0.85rem 1.25rem; border-top:1px solid var(--border); background:var(--bg); }
@@ -678,10 +682,10 @@ function buildOrderCard(order) {
   /* Action buttons (shown in footer) */
   let actionBtns = '';
   if (status === 'pending') {
-    actionBtns += `<button class="btn-outline btn-sm" style="color:var(--red);border-color:var(--red-light);margin-right:8px;" onclick="handleCancelOrder('${order.id}')">Cancel Order</button>`;
+    actionBtns += `<button class="btn-cancel" style="margin-right:8px;" onclick="handleCancelOrder('${order.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Cancel Order</button>`;
   }
-  if (status === 'delivered' || status === 'received') {
-    actionBtns += `<button class="btn-outline btn-sm" style="margin-right:8px;" onclick="handleRefundOrder('${order.id}')">Request Refund</button>`;
+  if (status === 'received') {
+    actionBtns += `<button class="btn-refund" style="margin-right:8px;" onclick="handleRefundOrder('${order.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Request Refund</button>`;
   }
   if (status === 'delivered') {
     actionBtns += `<button class="btn-confirm" id="confirm-${order.id}" onclick="handleConfirmReceipt('${order.id}')">
