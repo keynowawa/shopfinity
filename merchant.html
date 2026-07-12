@@ -1236,8 +1236,12 @@
         actionsHtml = `<button class="btn btn-outline btn-sm" style="color:var(--green);border-color:var(--green)" onclick="updateOrderStatus('${o.id}', 'cancelled')">
                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:text-bottom"><polyline points="20 6 9 17 4 12"/></svg> Approve Refund
                        </button>`;
+      } else if (s === 'cancelled') {
+        actionsHtml = `<span style="color:#c62828; font-size:12px; font-weight:600; background:#ffebee; padding:3px 10px; border-radius:20px;">Cancelled</span>`;
+      } else if (s === 'refunded') {
+        actionsHtml = `<span style="color:#4b5563; font-size:12px; font-weight:600; background:#f3f4f6; padding:3px 10px; border-radius:20px;">Refunded</span>`;
       } else {
-        actionsHtml = `<span style="color:var(--muted); font-size:12px">${status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>`;
+        actionsHtml = `<span style="color:var(--muted); font-size:12px; font-weight:600; background:var(--bg); padding:3px 10px; border-radius:20px;">${status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>`;
       }
 
       return `<tr style="border-bottom:none;">
