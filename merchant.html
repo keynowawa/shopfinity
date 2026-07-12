@@ -1173,7 +1173,10 @@
     }
 
     tbody.innerHTML = list.map(o => {
-      const status     = (o.order_status || 'pending').toLowerCase();
+      let status = (o.order_status || 'pending').toLowerCase();
+      if (o.payment_status === 'refunded') {
+        status = status === 'cancelled' ? 'refunded' : 'refund_pending';
+      }
       const badgeClass = status === 'delivered' ? 'green' : status === 'received' ? 'green' : status === 'shipped' ? 'blue' : status === 'pending' ? 'amber' : status === 'refunded' ? 'gray' : status === 'refund_pending' ? 'amber' : 'red';
       const date       = new Date(o.created_at).toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' });
       const total      = Number(o.total || o.total_amount || 0);
@@ -1222,6 +1225,10 @@
         actionsHtml = `<span style="color:var(--green); font-size:12px; font-weight:600; background:var(--green-light); padding:3px 10px; border-radius:20px;">Delivered</span>`;
       } else if (s === 'shipped') {
         actionsHtml = `<button class="btn btn-outline btn-sm" onclick="updateOrderStatus('${o.id}', 'delivered')">Delivered</button>`;
+      } else if (s === 'refund_pending') {
+        actionsHtml = `<button class="btn btn-outline btn-sm" style="color:var(--green);border-color:var(--green)" onclick="updateOrderStatus('${o.id}', 'cancelled')">
+                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:text-bottom"><polyline points="20 6 9 17 4 12"/></svg> Approve Refund
+                       </button>`;
       } else {
         actionsHtml = `<span style="color:var(--muted); font-size:12px">${status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>`;
       }
@@ -1369,7 +1376,10 @@
       return;
     }
     tbody.innerHTML = recent.map(o => {
-      const status     = (o.order_status || 'pending').toLowerCase();
+      let status = (o.order_status || 'pending').toLowerCase();
+      if (o.payment_status === 'refunded') {
+        status = status === 'cancelled' ? 'refunded' : 'refund_pending';
+      }
       const badgeClass = status === 'delivered' ? 'green' : status === 'received' ? 'green' : status === 'shipped' ? 'blue' : status === 'pending' ? 'amber' : status === 'refunded' ? 'gray' : status === 'refund_pending' ? 'amber' : 'red';
       const total      = Number(o.total || o.total_amount || 0);
       return `<tr>

@@ -917,7 +917,7 @@ async function refundOrder(orderId) {
           'Content-Type': 'application/json',
           Prefer: 'return=representation'
         },
-        body: JSON.stringify({ order_status: 'refund_pending' }),
+        body: JSON.stringify({ payment_status: 'refunded' }),
       }
     );
     if (res.ok) {

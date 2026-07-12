@@ -655,7 +655,10 @@ function renderTabContent() {
 <script>
 /* -- Build one order card -- */
 function buildOrderCard(order) {
-  const status      = (order.order_status || 'pending').toLowerCase();
+  let status = (order.order_status || 'pending').toLowerCase();
+  if (order.payment_status === 'refunded') {
+    status = status === 'cancelled' ? 'refunded' : 'refund_pending';
+  }
   const isCancelled = status === 'cancelled';
   const currentIdx  = STATUS_IDX[status] ?? 0;
   const date = new Date(order.created_at).toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
