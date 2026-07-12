@@ -1174,7 +1174,7 @@
 
     tbody.innerHTML = list.map(o => {
       const status     = (o.order_status || 'pending').toLowerCase();
-      const badgeClass = status === 'delivered' ? 'green' : status === 'received' ? 'green' : status === 'shipped' ? 'blue' : status === 'pending' ? 'amber' : 'red';
+      const badgeClass = status === 'delivered' ? 'green' : status === 'received' ? 'green' : status === 'shipped' ? 'blue' : status === 'pending' ? 'amber' : status === 'refunded' ? 'gray' : 'red';
       const date       = new Date(o.created_at).toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' });
       const total      = Number(o.total || o.total_amount || 0);
       const payMethod  = (o.payment_method || 'COD').replace(/_/g,' ').toUpperCase();
@@ -1216,8 +1216,10 @@
                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:text-bottom"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
                          Cancel
                        </button>`;
-      } else if (s === 'received' || s === 'delivered') {
+      } else if (s === 'received') {
         actionsHtml = `<span style="color:#6366f1; font-size:12px; font-weight:600; background:#eef2ff; padding:3px 10px; border-radius:20px;">Received</span>`;
+      } else if (s === 'delivered') {
+        actionsHtml = `<span style="color:var(--green); font-size:12px; font-weight:600; background:var(--green-light); padding:3px 10px; border-radius:20px;">Delivered</span>`;
       } else if (s === 'shipped') {
         actionsHtml = `<button class="btn btn-outline btn-sm" onclick="updateOrderStatus('${o.id}', 'delivered')">Delivered</button>`;
       } else {
@@ -1368,7 +1370,7 @@
     }
     tbody.innerHTML = recent.map(o => {
       const status     = (o.order_status || 'pending').toLowerCase();
-      const badgeClass = status === 'delivered' ? 'green' : status === 'received' ? 'green' : status === 'shipped' ? 'blue' : status === 'pending' ? 'amber' : 'red';
+      const badgeClass = status === 'delivered' ? 'green' : status === 'received' ? 'green' : status === 'shipped' ? 'blue' : status === 'pending' ? 'amber' : status === 'refunded' ? 'gray' : 'red';
       const total      = Number(o.total || o.total_amount || 0);
       return `<tr>
         <td>${o.order_number || '#' + o.id.slice(0,8).toUpperCase()}</td>

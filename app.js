@@ -799,7 +799,7 @@ async function submitReview(productId, rating, text, verifiedPurchase = false, u
 
 /**
  * Returns true if the current user has at least one order with
- * order_status = 'received' or 'delivered' that contains productId.
+ * order_status = 'received' that contains productId.
  */
 async function hasReceivedProduct(productId) {
   if (!currentUser) return false;
@@ -808,7 +808,7 @@ async function hasReceivedProduct(productId) {
   try {
     // Single efficient query: join order_items → orders filtered by user + status
     const res = await fetch(
-      `${url}/rest/v1/order_items?product_id=eq.${productId}&select=order_id,orders!inner(id)&orders.user_id=eq.${currentUser.id}&orders.order_status=in.(received,delivered)&limit=1`,
+      `${url}/rest/v1/order_items?product_id=eq.${productId}&select=order_id,orders!inner(id)&orders.user_id=eq.${currentUser.id}&orders.order_status=eq.received&limit=1`,
       { headers: { apikey: key, Authorization: `Bearer ${key}`, Accept: 'application/json' } }
     );
     if (!res.ok) return false;
@@ -862,6 +862,70 @@ async function confirmReceipt(orderId) {
       console.error('[SF] confirmReceipt error:', e);
       showToast('Failed to confirm receipt. Please try again.');
     }
+    return false;
+  }
+}
+
+/**
+ * Cancel a pending order
+ */
+async function cancelOrder(orderId) {
+  if (!currentUser) { showToast('Please sign in'); return false; }
+  const { url, key } = getConfig();
+  if (!url || !key) return false;
+
+  try {
+    const res = await fetch(
+      `${url}/rest/v1/orders?id=eq.${orderId}&user_id=eq.${currentUser.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ order_status: 'cancelled' }),
+      }
+    );
+    if (res.ok) {
+      showToast('Order cancelled');
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.error('[SF] cancelOrder error:', e);
+    return false;
+  }
+}
+
+/**
+ * Request a refund for a delivered or received order
+ */
+async function refundOrder(orderId) {
+  if (!currentUser) { showToast('Please sign in'); return false; }
+  const { url, key } = getConfig();
+  if (!url || !key) return false;
+
+  try {
+    const res = await fetch(
+      `${url}/rest/v1/orders?id=eq.${orderId}&user_id=eq.${currentUser.id}`,
+      {
+        method: 'PATCH',
+        headers: {
+          apikey: key,
+          Authorization: `Bearer ${key}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ order_status: 'refunded' }),
+      }
+    );
+    if (res.ok) {
+      showToast('Refund requested');
+      return true;
+    }
+    return false;
+  } catch (e) {
+    console.error('[SF] refundOrder error:', e);
     return false;
   }
 }

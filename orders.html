@@ -675,12 +675,19 @@ function buildOrderCard(order) {
       }).join('')
     : `<div style="font-size:13px;color:var(--muted);padding:0.5rem 0;">No item details available.</div>`;
 
-  /* Confirm receipt button (shown in footer when delivered) */
-  const confirmBtn = status === 'delivered'
-    ? `<button class="btn-confirm" id="confirm-${order.id}" onclick="handleConfirmReceipt('${order.id}')">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Confirm receipt
-       </button>`
-    : '';
+  /* Action buttons (shown in footer) */
+  let actionBtns = '';
+  if (status === 'pending') {
+    actionBtns += `<button class="btn-outline btn-sm" style="color:var(--red);border-color:var(--red-light);margin-right:8px;" onclick="handleCancelOrder('${order.id}')">Cancel Order</button>`;
+  }
+  if (status === 'delivered' || status === 'received') {
+    actionBtns += `<button class="btn-outline btn-sm" style="margin-right:8px;" onclick="handleRefundOrder('${order.id}')">Request Refund</button>`;
+  }
+  if (status === 'delivered') {
+    actionBtns += `<button class="btn-confirm" id="confirm-${order.id}" onclick="handleConfirmReceipt('${order.id}')">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Order Received
+       </button>`;
+  }
 
   /* Highlight card if it has unreviewed items */
   const hasUnreviewed = status === 'received' &&
@@ -709,7 +716,9 @@ function buildOrderCard(order) {
         Payment: <strong>${(order.payment_method||'').replace(/_/g,' ').toUpperCase()}</strong>
         &nbsp;<svg width="4" height="4" viewBox="0 0 4 4" fill="currentColor" style="vertical-align:middle;opacity:0.5;"><circle cx="2" cy="2" r="2"/></svg>&nbsp; Shipping: <strong>&#8369;${Number(order.shipping_fee||0).toLocaleString()}</strong>
       </div>
-      ${confirmBtn}
+      <div style="display:flex;align-items:center;">
+        ${actionBtns}
+      </div>
     </div>
   </div>`;
 }
@@ -750,7 +759,7 @@ async function handleConfirmReceipt(orderId) {
   }
 
   if (!ok) {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Confirm receipt'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg> Order Received'; }
     return;
   }
 
@@ -770,6 +779,28 @@ async function handleConfirmReceipt(orderId) {
   updateTabCounts(allOrders, reviewedSet);
   // We no longer forcefully switch to the 'to-review' tab, so the user stays where they are
   renderTabContent();
+}
+
+/* -- Cancel Order -- */
+async function handleCancelOrder(orderId) {
+  if (!confirm('Are you sure you want to cancel this order?')) return;
+  const ok = await cancelOrder(orderId);
+  if (ok) {
+    try { allOrders = await loadUserOrders(); } catch(e){}
+    updateTabCounts(allOrders, reviewedSet);
+    renderTabContent();
+  }
+}
+
+/* -- Refund Order -- */
+async function handleRefundOrder(orderId) {
+  if (!confirm('Are you sure you want to request a refund for this order?')) return;
+  const ok = await refundOrder(orderId);
+  if (ok) {
+    try { allOrders = await loadUserOrders(); } catch(e){}
+    updateTabCounts(allOrders, reviewedSet);
+    renderTabContent();
+  }
 }
 
 /* -- Review modal -- */
