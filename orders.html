@@ -407,6 +407,36 @@
   </div>
 </div>
 
+<!-- ===== CANCEL ORDER MODAL ===== -->
+<div id="cancelConfirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:900; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:20px; padding:2rem 1.75rem; max-width:400px; width:90%; box-shadow:0 24px 64px rgba(0,0,0,0.18); text-align:center;">
+    <div style="width:64px; height:64px; background:#ffeaea; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem;">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#c0392b" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    </div>
+    <h3 style="font-size:18px; font-weight:700; margin-bottom:0.5rem; color:#111827;">Cancel order?</h3>
+    <p style="font-size:14px; color:#6b7280; margin-bottom:1.5rem; line-height:1.6;">Are you sure you want to cancel this order? This action cannot be undone.</p>
+    <div style="display:flex; gap:10px;">
+      <button id="cancelConfirmNo" style="flex:1; padding:11px 0; border:1.5px solid #e4e7f0; border-radius:10px; font-size:14px; font-weight:600; background:#fff; color:#6b7280; cursor:pointer; font-family:inherit; transition:background 0.15s;">No, keep it</button>
+      <button id="cancelConfirmYes" style="flex:1; padding:11px 0; border:none; border-radius:10px; font-size:14px; font-weight:700; background:linear-gradient(135deg,#ef5350,#c0392b); color:#fff; cursor:pointer; font-family:inherit; box-shadow:0 2px 8px rgba(192,57,43,0.3); transition:opacity 0.15s;">Yes, Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== REFUND ORDER MODAL ===== -->
+<div id="refundConfirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:900; align-items:center; justify-content:center;">
+  <div style="background:#fff; border-radius:20px; padding:2rem 1.75rem; max-width:400px; width:90%; box-shadow:0 24px 64px rgba(0,0,0,0.18); text-align:center;">
+    <div style="width:64px; height:64px; background:#f3f4f6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem;">
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    </div>
+    <h3 style="font-size:18px; font-weight:700; margin-bottom:0.5rem; color:#111827;">Request a refund?</h3>
+    <p style="font-size:14px; color:#6b7280; margin-bottom:1.5rem; line-height:1.6;">Are you sure you want to request a refund for this product? Our support team will review your request.</p>
+    <div style="display:flex; gap:10px;">
+      <button id="refundConfirmNo" style="flex:1; padding:11px 0; border:1.5px solid #e4e7f0; border-radius:10px; font-size:14px; font-weight:600; background:#fff; color:#6b7280; cursor:pointer; font-family:inherit; transition:background 0.15s;">Cancel</button>
+      <button id="refundConfirmYes" style="flex:1; padding:11px 0; border:none; border-radius:10px; font-size:14px; font-weight:700; background:linear-gradient(135deg,#9ca3af,#4b5563); color:#fff; cursor:pointer; font-family:inherit; box-shadow:0 2px 8px rgba(75,85,99,0.3); transition:opacity 0.15s;">Yes, Refund</button>
+    </div>
+  </div>
+</div>
+
 <script src="supabase-config.js"></script>
 <script src="app.js"></script>
 <script>
@@ -787,7 +817,27 @@ async function handleConfirmReceipt(orderId) {
 
 /* -- Cancel Order -- */
 async function handleCancelOrder(orderId) {
-  if (!confirm('Are you sure you want to cancel this order?')) return;
+  const confirmed = await new Promise((resolve) => {
+    const modal  = document.getElementById('cancelConfirmModal');
+    const okBtn  = document.getElementById('cancelConfirmYes');
+    const cancel = document.getElementById('cancelConfirmNo');
+    modal.style.display = 'flex';
+    function cleanup(result) {
+      modal.style.display = 'none';
+      okBtn.removeEventListener('click', onOk);
+      cancel.removeEventListener('click', onCancel);
+      modal.onclick = null;
+      resolve(result);
+    }
+    const onOk     = () => cleanup(true);
+    const onCancel = () => cleanup(false);
+    okBtn.addEventListener('click', onOk);
+    cancel.addEventListener('click', onCancel);
+    modal.onclick = (e) => { if (e.target === modal) cleanup(false); };
+  });
+
+  if (!confirmed) return;
+
   const ok = await cancelOrder(orderId);
   if (ok) {
     try { allOrders = await loadUserOrders(); } catch(e){}
@@ -798,7 +848,27 @@ async function handleCancelOrder(orderId) {
 
 /* -- Refund Order -- */
 async function handleRefundOrder(orderId) {
-  if (!confirm('Are you sure you want to request a refund for this order?')) return;
+  const confirmed = await new Promise((resolve) => {
+    const modal  = document.getElementById('refundConfirmModal');
+    const okBtn  = document.getElementById('refundConfirmYes');
+    const cancel = document.getElementById('refundConfirmNo');
+    modal.style.display = 'flex';
+    function cleanup(result) {
+      modal.style.display = 'none';
+      okBtn.removeEventListener('click', onOk);
+      cancel.removeEventListener('click', onCancel);
+      modal.onclick = null;
+      resolve(result);
+    }
+    const onOk     = () => cleanup(true);
+    const onCancel = () => cleanup(false);
+    okBtn.addEventListener('click', onOk);
+    cancel.addEventListener('click', onCancel);
+    modal.onclick = (e) => { if (e.target === modal) cleanup(false); };
+  });
+
+  if (!confirmed) return;
+
   const ok = await refundOrder(orderId);
   if (ok) {
     try { allOrders = await loadUserOrders(); } catch(e){}
