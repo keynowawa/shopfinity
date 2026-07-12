@@ -47,6 +47,7 @@
     .pill-received  { background:var(--green-light); color:var(--green-dark); }
     .pill-cancelled { background:#ffeaea; color:#c0392b; }
     .pill-refunded  { background:#f3f4f6; color:#4b5563; }
+    .pill-refund_pending { background:#fff3cd; color:#856404; }
 
     /* Pipeline */
     .status-pipeline { display:flex; align-items:flex-start; padding:1.25rem 1.5rem 0.75rem; overflow-x:auto; gap:0; }
@@ -427,7 +428,7 @@
 <div id="refundConfirmModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.45); z-index:900; align-items:center; justify-content:center;">
   <div style="background:#fff; border-radius:20px; padding:2rem 1.75rem; max-width:400px; width:90%; box-shadow:0 24px 64px rgba(0,0,0,0.18); text-align:center;">
     <div style="width:64px; height:64px; background:#f3f4f6; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 1.25rem;">
-      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2.5"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4b5563" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg>
     </div>
     <h3 style="font-size:18px; font-weight:700; margin-bottom:0.5rem; color:#111827;">Request a refund?</h3>
     <p style="font-size:14px; color:#6b7280; margin-bottom:1.5rem; line-height:1.6;">Are you sure you want to request a refund for this product? Our support team will review your request.</p>
@@ -661,7 +662,7 @@ function buildOrderCard(order) {
   const total = Number(order.total || 0);
 
   /* Pipeline */
-  const isTerminated = status === 'cancelled' || status === 'refunded';
+  const isTerminated = status === 'cancelled' || status === 'refunded' || status === 'refund_pending';
   const pipelineHTML = isTerminated
     ? ``
     : `<div class="status-pipeline">${PIPELINE.map((step,idx) => {
@@ -717,7 +718,7 @@ function buildOrderCard(order) {
     actionBtns += `<button class="btn-cancel" style="margin-right:8px;" onclick="handleCancelOrder('${order.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> Cancel Order</button>`;
   }
   if (status === 'received') {
-    actionBtns += `<button class="btn-refund" style="margin-right:8px;" onclick="handleRefundOrder('${order.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg> Request Refund</button>`;
+    actionBtns += `<button class="btn-refund" style="margin-right:8px;" onclick="handleRefundOrder('${order.id}')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 14 4 9 9 4"/><path d="M20 20v-7a4 4 0 0 0-4-4H4"/></svg> Request Refund</button>`;
   }
   if (status === 'delivered') {
     actionBtns += `<button class="btn-confirm" id="confirm-${order.id}" onclick="handleConfirmReceipt('${order.id}')">
@@ -741,7 +742,7 @@ function buildOrderCard(order) {
         <div class="order-date">${date}</div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;">
-        <span class="status-pill pill-${status}">${status.charAt(0).toUpperCase()+status.slice(1)}</span>
+        <span class="status-pill pill-${status}">${status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>
         <div class="order-total">₱${total.toLocaleString()}</div>
       </div>
     </div>

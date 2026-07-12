@@ -1174,7 +1174,7 @@
 
     tbody.innerHTML = list.map(o => {
       const status     = (o.order_status || 'pending').toLowerCase();
-      const badgeClass = status === 'delivered' ? 'green' : status === 'received' ? 'green' : status === 'shipped' ? 'blue' : status === 'pending' ? 'amber' : status === 'refunded' ? 'gray' : 'red';
+      const badgeClass = status === 'delivered' ? 'green' : status === 'received' ? 'green' : status === 'shipped' ? 'blue' : status === 'pending' ? 'amber' : status === 'refunded' ? 'gray' : status === 'refund_pending' ? 'amber' : 'red';
       const date       = new Date(o.created_at).toLocaleDateString('en-PH', { month:'short', day:'numeric', year:'numeric' });
       const total      = Number(o.total || o.total_amount || 0);
       const payMethod  = (o.payment_method || 'COD').replace(/_/g,' ').toUpperCase();
@@ -1223,7 +1223,7 @@
       } else if (s === 'shipped') {
         actionsHtml = `<button class="btn btn-outline btn-sm" onclick="updateOrderStatus('${o.id}', 'delivered')">Delivered</button>`;
       } else {
-        actionsHtml = `<span style="color:var(--muted); font-size:12px">${status.charAt(0).toUpperCase() + status.slice(1)}</span>`;
+        actionsHtml = `<span style="color:var(--muted); font-size:12px">${status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span>`;
       }
 
       return `<tr style="border-bottom:none;">
@@ -1232,7 +1232,7 @@
         <td>${date}</td>
         <td style="font-weight:600">₱${total.toLocaleString()}</td>
         <td><span class="badge gray">${payMethod}</span></td>
-        <td><span class="badge ${badgeClass}">${status.charAt(0).toUpperCase() + status.slice(1)}</span></td>
+        <td><span class="badge ${badgeClass}">${status.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())}</span></td>
         <td><div class="row-actions" style="justify-content:flex-end; gap:8px">
           ${actionsHtml}
         </div></td>
@@ -1370,7 +1370,7 @@
     }
     tbody.innerHTML = recent.map(o => {
       const status     = (o.order_status || 'pending').toLowerCase();
-      const badgeClass = status === 'delivered' ? 'green' : status === 'received' ? 'green' : status === 'shipped' ? 'blue' : status === 'pending' ? 'amber' : status === 'refunded' ? 'gray' : 'red';
+      const badgeClass = status === 'delivered' ? 'green' : status === 'received' ? 'green' : status === 'shipped' ? 'blue' : status === 'pending' ? 'amber' : status === 'refunded' ? 'gray' : status === 'refund_pending' ? 'amber' : 'red';
       const total      = Number(o.total || o.total_amount || 0);
       return `<tr>
         <td>${o.order_number || '#' + o.id.slice(0,8).toUpperCase()}</td>

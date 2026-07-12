@@ -915,8 +915,9 @@ async function refundOrder(orderId) {
           apikey: key,
           Authorization: `Bearer ${key}`,
           'Content-Type': 'application/json',
+          Prefer: 'return=representation'
         },
-        body: JSON.stringify({ order_status: 'refunded' }),
+        body: JSON.stringify({ order_status: 'refund_pending' }),
       }
     );
     if (res.ok) {
