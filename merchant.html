@@ -1218,7 +1218,7 @@
       let actionsHtml = '';
       const s = status.toLowerCase();
       if (s === 'pending') {
-        actionsHtml = `<button class="btn btn-outline btn-sm" onclick="updateOrderStatus('${o.id}', 'shipped')">
+        actionsHtml = `<button class="btn btn-outline btn-sm" style="color:var(--blue);border-color:var(--blue-light);background:var(--blue-light)" onclick="updateOrderStatus('${o.id}', 'shipped')">
                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:text-bottom"><rect x="1" y="3" width="15" height="13"></rect><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"></polygon><circle cx="5.5" cy="18.5" r="2.5"></circle><circle cx="18.5" cy="18.5" r="2.5"></circle></svg>
                          Shipped
                        </button>
@@ -1231,7 +1231,7 @@
       } else if (s === 'delivered') {
         actionsHtml = `<span style="color:#00796b; font-size:12px; font-weight:600; background:#e0f2f1; padding:3px 10px; border-radius:20px;">Out for Delivery</span>`;
       } else if (s === 'shipped') {
-        actionsHtml = `<button class="btn btn-outline btn-sm" onclick="updateOrderStatus('${o.id}', 'delivered')">Out for Delivery</button>`;
+        actionsHtml = `<button class="btn btn-outline btn-sm" style="color:#00796b;border-color:#e0f2f1;background:#e0f2f1" onclick="updateOrderStatus('${o.id}', 'delivered')">Out for Delivery</button>`;
       } else if (s === 'refund_pending') {
         actionsHtml = `<button class="btn btn-outline btn-sm" style="color:var(--green);border-color:var(--green)" onclick="updateOrderStatus('${o.id}', 'cancelled')">
                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right:4px; vertical-align:text-bottom"><polyline points="20 6 9 17 4 12"/></svg> Approve Refund
